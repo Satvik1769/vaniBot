@@ -9,44 +9,36 @@ assistant_id: battery-smart-voicebot
 
 pipeline:
   - name: CompactLLMCommandGenerator
+    llm:
+      model_group: openai-gpt-4o
 
   - name: WhitespaceTokenizer
   - name: RegexFeaturizer
   - name: LexicalSyntacticFeaturizer
   - name: CountVectorsFeaturizer
+  - name: NLUCommandAdapter
 
   - name: DIETClassifier
     epochs: 100
 
   - name: FallbackClassifier
     threshold: 0.45
-
     llm:
-      model_group: gemini_llm
-      user_input:
-        max_characters: 420
+      model_group: openai-gpt-4o
 
 policies:
   - name: FlowPolicy
+
+  - name: RulePolicy
 
   - name: EnterpriseSearchPolicy
     vector_store:
       type: faiss
       source: ./docs
     llm:
-      model_group: gemini_llm
+      model_group: openai-gpt-4o
     embeddings:
-      model_group: openai_embeddings
+      model_group: openai-embeddings
     check_relevancy: true
 
-# ✅ MUST be top-level
-model_groups:
-  - id: gemini_llm
-    models:
-      - provider: gemini
-        model: gemini-pro
-
-  - id: openai_embeddings
-    models:
-      - provider: openai
-        model: text-embedding-3-small
+# Model Groups are defined in endpoints.yml

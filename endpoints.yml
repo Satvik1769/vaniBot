@@ -65,3 +65,13 @@ model_groups:
     models:
       - provider: openai
         model: text-embedding-3-large
+#  - id: gemini_llm
+#    models:
+#      - provider: gemini
+#        model: gemini-pro
+#        timeout: 15
+#        max_completion_tokens: 256
+#  - id: openai-embeddings
+#    models:
+#      - provider: openai
+#        model: text-embedding-3-large
