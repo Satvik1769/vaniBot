@@ -15,6 +15,7 @@ flows:
         next: "check_expiring"
 
       - id: "check_expiring"
+        noop: true
         next:
           - if: slots.subscription_expiring_soon == true
             then: "offer_renewal"

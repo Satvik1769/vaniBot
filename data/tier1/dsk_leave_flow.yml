@@ -29,6 +29,7 @@ flows:
         next: "check_activation"
 
       - id: "check_activation"
+        noop: true
         next:
           - if: slots.service_type == "activation"
             then: "show_activation_info"

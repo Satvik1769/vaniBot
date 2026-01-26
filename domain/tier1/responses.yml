@@ -21,6 +21,12 @@ responses:
       metadata:
         rephrase: true
 
+  utter_ask_wants_invoice_detail:
+    - text: "Kya aap kisi invoice ki detail dekhna chahte hain? (Haan/Nahi)"
+    - text: "Would you like to see details of any invoice? (Yes/No)"
+      metadata:
+        rephrase: true
+
   utter_invoice_explanation:
     - text: |
         {invoice_explanation}
@@ -55,6 +61,12 @@ responses:
   utter_ask_check_availability:
     - text: "Kya aap kisi station ki availability check karna chahte hain?"
     - text: "Would you like to check battery availability at any station?"
+      metadata:
+        rephrase: true
+
+  utter_ask_wants_availability:
+    - text: "Kya aap kisi station ki battery availability check karna chahenge? (Haan/Nahi)"
+    - text: "Would you like to check battery availability at a station? (Yes/No)"
       metadata:
         rephrase: true
 
@@ -93,6 +105,12 @@ responses:
   utter_offer_renewal:
     - text: "Aapka plan jaldi expire ho raha hai. Kya aap renew karna chahenge?"
     - text: "Your plan is expiring soon. Would you like to renew?"
+      metadata:
+        rephrase: true
+
+  utter_ask_wants_renewal:
+    - text: "Kya aap apna plan renew karna chahenge? (Haan/Nahi)"
+    - text: "Would you like to renew your plan? (Yes/No)"
       metadata:
         rephrase: true
 
@@ -142,6 +160,18 @@ responses:
   utter_ask_subscribe:
     - text: "Kya aap koi plan subscribe karna chahenge?"
     - text: "Would you like to subscribe to any plan?"
+      metadata:
+        rephrase: true
+
+  utter_ask_wants_subscription:
+    - text: "Kya aap koi plan lena chahenge? (Haan/Nahi)"
+    - text: "Would you like to subscribe to a plan? (Yes/No)"
+      metadata:
+        rephrase: true
+
+  utter_ask_plan_confirmed:
+    - text: "Kya aap is plan ko confirm karte hain? (Haan/Nahi)"
+    - text: "Do you confirm this plan? (Yes/No)"
       metadata:
         rephrase: true
 
@@ -231,6 +261,12 @@ responses:
         rephrase: true
         language: hi-en
 
+  utter_ask_leave_confirmed:
+    - text: "Haan ya nahi? (Yes/No)"
+    - text: "Please confirm: Yes or No?"
+      metadata:
+        rephrase: true
+
   utter_leave_submitted:
     - text: |
         Aapki leave request submit ho gayi hai!
@@ -264,6 +300,12 @@ responses:
   utter_ask_apply_leave:
     - text: "Kya aap naya leave apply karna chahte hain?"
     - text: "Would you like to apply for new leave?"
+      metadata:
+        rephrase: true
+
+  utter_ask_wants_apply_leave:
+    - text: "Kya aap leave apply karna chahenge? (Haan/Nahi)"
+    - text: "Would you like to apply for leave? (Yes/No)"
       metadata:
         rephrase: true
 

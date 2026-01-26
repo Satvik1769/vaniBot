@@ -94,7 +94,7 @@ slots:
         entity: location
       - type: from_text
         conditions:
-          - active_loop: find_station
+          - active_loop: find_station_form
     influence_conversation: false
 
   user_latitude:
@@ -122,7 +122,7 @@ slots:
         entity: station_name
       - type: from_text
         conditions:
-          - active_loop: check_availability
+          - active_loop: check_availability_form
     influence_conversation: false
 
   station_availability:
@@ -175,7 +175,7 @@ slots:
         entity: plan_type
       - type: from_text
         conditions:
-          - active_loop: renew_subscription
+          - active_loop: renew_subscription_form
     influence_conversation: false
 
   pricing_info:
@@ -244,7 +244,7 @@ slots:
         entity: service_type
       - type: from_text
         conditions:
-          - active_loop: find_dsk
+          - active_loop: find_dsk_form
     influence_conversation: false
 
   nearest_dsk:
@@ -266,7 +266,7 @@ slots:
         entity: leave_date
       - type: from_text
         conditions:
-          - active_loop: apply_leave
+          - active_loop: apply_leave_form
     influence_conversation: false
 
   leave_end_date:
@@ -276,7 +276,7 @@ slots:
         entity: leave_date
       - type: from_text
         conditions:
-          - active_loop: apply_leave
+          - active_loop: apply_leave_form
     influence_conversation: false
 
   leave_reason:
@@ -284,7 +284,7 @@ slots:
     mappings:
       - type: from_text
         conditions:
-          - active_loop: apply_leave
+          - active_loop: apply_leave_form
     influence_conversation: false
 
   leave_status:
