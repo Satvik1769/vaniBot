@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
 
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/battery_smart"
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:1234@localhost:5432/postgres"
     DATABASE_POOL_SIZE: int = 10
     DATABASE_MAX_OVERFLOW: int = 20
 
@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: Optional[str] = None
 
     # Amazon Connect
-    AWS_REGION: str = "ap-south-1"
+    AWS_REGION: str = "ap-southeast-1"
     CONNECT_INSTANCE_ID: Optional[str] = None
     CONNECT_CONTACT_FLOW_ID: Optional[str] = None
     CONNECT_QUEUE_ID: Optional[str] = None

@@ -10,7 +10,7 @@ from botocore.exceptions import ClientError
 logger = logging.getLogger(__name__)
 
 # AWS Configuration
-AWS_REGION = os.getenv("AWS_REGION", "ap-south-1")
+AWS_REGION = os.getenv("AWS_REGION", "ap-southeast-1")
 CONNECT_INSTANCE_ID = os.getenv("CONNECT_INSTANCE_ID")
 CONNECT_CONTACT_FLOW_ID = os.getenv("CONNECT_CONTACT_FLOW_ID")
 CONNECT_QUEUE_ID = os.getenv("CONNECT_QUEUE_ID")
