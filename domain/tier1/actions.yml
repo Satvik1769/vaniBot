@@ -1,0 +1,67 @@
+version: "3.1"
+
+actions:
+  # Swap & Invoice Actions
+  - action_fetch_swap_history
+  - action_explain_invoice
+
+  # Station Actions
+  - action_find_nearest_stations
+  - action_check_station_availability
+
+  # Subscription Actions
+  - action_check_subscription
+  - action_show_pricing
+  - action_process_renewal
+
+  # DSK & Leave Actions
+  - action_find_nearest_dsk
+  - action_get_activation_info
+  - action_apply_leave
+  - action_check_leave_status
+
+  # Sentiment & Handoff Actions
+  - action_analyze_sentiment
+  - action_check_escalation
+  - action_trigger_handoff
+  - action_generate_handoff_summary
+
+  # Session Management
+  - action_session_start
+  - action_session_end
+  - action_identify_driver
+  - action_detect_language
+
+entities:
+  - location
+  - station_name
+  - time_period
+  - invoice_id
+  - amount
+  - plan_type
+  - service_type
+  - leave_date
+  - leave_duration
+
+forms:
+  find_station_form:
+    required_slots:
+      - user_location
+
+  check_availability_form:
+    required_slots:
+      - station_identifier
+
+  renew_subscription_form:
+    required_slots:
+      - selected_plan
+
+  find_dsk_form:
+    required_slots:
+      - service_type
+      - user_location
+
+  apply_leave_form:
+    required_slots:
+      - leave_start_date
+      - leave_end_date

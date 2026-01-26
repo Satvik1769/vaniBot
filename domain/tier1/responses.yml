@@ -1,0 +1,307 @@
+version: "3.1"
+
+responses:
+  # ============================================
+  # SWAP HISTORY RESPONSES
+  # ============================================
+  utter_swap_history:
+    - text: |
+        {swap_history_message}
+
+        {swap_list}
+
+        Kya aap kisi invoice ke baare mein detail chahte hain?
+      metadata:
+        rephrase: true
+        language: hi-en
+
+  utter_ask_invoice_clarification:
+    - text: "Kya aap kisi charge ya invoice ke baare mein detail jaanna chahte hain?"
+    - text: "Would you like me to explain any charge or invoice?"
+      metadata:
+        rephrase: true
+
+  utter_invoice_explanation:
+    - text: |
+        {invoice_explanation}
+
+        Breakdown:
+        {invoice_breakdown}
+      metadata:
+        rephrase: true
+        language: hi-en
+
+  # ============================================
+  # STATION RESPONSES
+  # ============================================
+  utter_ask_location:
+    - text: "Aap currently kahan hain? City ya area bata dijiye."
+    - text: "Aapka location kya hai? Area ya landmark batayein."
+    - text: "Where are you currently? Please tell me the area or city."
+      metadata:
+        rephrase: true
+
+  utter_nearest_stations:
+    - text: |
+        Aapke paas {station_count} stations hain:
+
+        {station_list}
+
+        Sabse nazdeeki {nearest_station_name} hai jahan {available_batteries} batteries available hain.
+      metadata:
+        rephrase: true
+        language: hi-en
+
+  utter_ask_check_availability:
+    - text: "Kya aap kisi station ki availability check karna chahte hain?"
+    - text: "Would you like to check battery availability at any station?"
+      metadata:
+        rephrase: true
+
+  utter_ask_station_name:
+    - text: "Kis station ki availability check karni hai? Station ka naam batayein."
+    - text: "Which station would you like to check? Please tell me the station name."
+      metadata:
+        rephrase: true
+
+  utter_station_availability:
+    - text: |
+        {station_name}:
+        - Available batteries: {available_count}
+        - Status: {availability_status}
+
+        {availability_message}
+      metadata:
+        rephrase: true
+        language: hi-en
+
+  # ============================================
+  # SUBSCRIPTION RESPONSES
+  # ============================================
+  utter_subscription_status:
+    - text: |
+        {subscription_message}
+
+        Plan: {plan_name}
+        Status: {plan_status}
+        Validity: {end_date} tak ({days_remaining} din bache)
+        Swaps: {swaps_info}
+      metadata:
+        rephrase: true
+        language: hi-en
+
+  utter_offer_renewal:
+    - text: "Aapka plan jaldi expire ho raha hai. Kya aap renew karna chahenge?"
+    - text: "Your plan is expiring soon. Would you like to renew?"
+      metadata:
+        rephrase: true
+
+  utter_pricing_info:
+    - text: |
+        Hamare plans:
+
+        {pricing_list}
+
+        Monthly plan mein sabse achhi value hai!
+      metadata:
+        rephrase: true
+        language: hi-en
+
+  utter_ask_plan_selection:
+    - text: "Kaunsa plan lena chahenge? (Daily/Weekly/Monthly/Yearly)"
+    - text: "Which plan would you like? (Daily/Weekly/Monthly/Yearly)"
+      metadata:
+        rephrase: true
+
+  utter_confirm_plan:
+    - text: |
+        Aapne {selected_plan} plan select kiya hai.
+
+        Price: Rs.{plan_price}
+        Tax (18%): Rs.{tax_amount}
+        Total: Rs.{total_amount}
+        Validity: {validity_days} din
+
+        Confirm karna chahenge?
+      metadata:
+        rephrase: true
+        language: hi-en
+
+  utter_renewal_success:
+    - text: |
+        {plan_name} plan successfully activate ho gaya!
+
+        Validity: {start_date} se {end_date} tak
+        Payment link aapke registered number pe bhej diya gaya hai.
+
+        Dhanyavaad Battery Smart choose karne ke liye!
+      metadata:
+        rephrase: true
+        language: hi-en
+
+  utter_ask_subscribe:
+    - text: "Kya aap koi plan subscribe karna chahenge?"
+    - text: "Would you like to subscribe to any plan?"
+      metadata:
+        rephrase: true
+
+  # ============================================
+  # DSK & LEAVE RESPONSES
+  # ============================================
+  utter_ask_service_type:
+    - text: |
+        Aapko kis service ki zaroorat hai?
+        - Activation (new account)
+        - Repair (battery issue)
+        - Support (general help)
+        - Battery Replacement
+    - text: |
+        What service do you need?
+        - Activation (new account)
+        - Repair (battery issue)
+        - Support (general help)
+        - Battery Replacement
+      metadata:
+        rephrase: true
+
+  utter_ask_location_for_dsk:
+    - text: "DSK dhundhne ke liye aapka area ya city batayein."
+    - text: "Please tell me your area or city to find the nearest DSK."
+      metadata:
+        rephrase: true
+
+  utter_nearest_dsk:
+    - text: |
+        Aapke sabse nazdeeki DSK:
+
+        {dsk_name}
+        Address: {dsk_address}
+        Phone: {dsk_phone}
+        Timing: {dsk_hours}
+        Services: {dsk_services}
+      metadata:
+        rephrase: true
+        language: hi-en
+
+  utter_activation_info:
+    - text: |
+        Activation ke liye:
+
+        Required Documents:
+        {required_docs}
+
+        Process:
+        {process_steps}
+
+        Estimated Time: {estimated_time}
+
+        Nearest DSK pe visit karein: {dsk_name}
+      metadata:
+        rephrase: true
+        language: hi-en
+
+  utter_ask_leave_start_date:
+    - text: "Leave kis date se chahiye? (e.g., kal, 28 January, next Monday)"
+    - text: "From which date do you need leave?"
+      metadata:
+        rephrase: true
+
+  utter_ask_leave_end_date:
+    - text: "Leave kis date tak chahiye?"
+    - text: "Till which date do you need leave?"
+      metadata:
+        rephrase: true
+
+  utter_ask_leave_reason:
+    - text: "Leave ki wajah batayein (optional - skip ke liye 'skip' bolein)"
+    - text: "Please tell me the reason for leave (optional - say 'skip' to skip)"
+      metadata:
+        rephrase: true
+
+  utter_confirm_leave:
+    - text: |
+        Leave Request:
+        - From: {leave_start_date}
+        - To: {leave_end_date}
+        - Days: {leave_days}
+        - Reason: {leave_reason}
+
+        Confirm karna chahenge?
+      metadata:
+        rephrase: true
+        language: hi-en
+
+  utter_leave_submitted:
+    - text: |
+        Aapki leave request submit ho gayi hai!
+
+        Status: Pending Approval
+        Dates: {leave_start_date} se {leave_end_date}
+
+        Approval hone par aapko notification mil jayega.
+      metadata:
+        rephrase: true
+        language: hi-en
+
+  utter_leave_cancelled:
+    - text: "Theek hai, leave request cancel kar di gayi hai."
+    - text: "Okay, the leave request has been cancelled."
+      metadata:
+        rephrase: true
+
+  utter_leave_status:
+    - text: |
+        {leave_status_message}
+
+        Pending Leaves: {pending_count}
+        Approved Leaves: {approved_count}
+
+        {leave_details}
+      metadata:
+        rephrase: true
+        language: hi-en
+
+  utter_ask_apply_leave:
+    - text: "Kya aap naya leave apply karna chahte hain?"
+    - text: "Would you like to apply for new leave?"
+      metadata:
+        rephrase: true
+
+  # ============================================
+  # COMMON RESPONSES
+  # ============================================
+  utter_anything_else:
+    - text: "Aur koi madad chahiye?"
+    - text: "Is there anything else I can help you with?"
+    - text: "Kuch aur?"
+      metadata:
+        rephrase: true
+
+  utter_greet:
+    - text: "Namaste! Battery Smart mein aapka swagat hai. Main aapki kaise madad kar sakti hoon?"
+    - text: "Hello! Welcome to Battery Smart. How can I help you today?"
+      metadata:
+        rephrase: true
+
+  utter_goodbye:
+    - text: "Dhanyavaad! Battery Smart ko choose karne ke liye shukriya. Apna khayal rakhein!"
+    - text: "Thank you for choosing Battery Smart. Take care and ride safe!"
+      metadata:
+        rephrase: true
+
+  utter_out_of_scope:
+    - text: "Main sirf Battery Smart se related queries mein help kar sakti hoon. Swap history, station finder, subscription ya DSK ke baare mein puchein."
+    - text: "I can only help with Battery Smart related queries. Please ask about swap history, stations, subscriptions, or DSK services."
+      metadata:
+        rephrase: true
+
+  utter_ask_rephrase:
+    - text: "Maaf kijiye, samajh nahi aayi. Kya aap dobara bata sakte hain?"
+    - text: "Sorry, I didn't understand. Could you please rephrase?"
+      metadata:
+        rephrase: true
+
+  utter_default:
+    - text: "Main samajh nahi paayi. Kya aap swap history, nearest station, subscription ya DSK ke baare mein jaanna chahte hain?"
+      metadata:
+        rephrase: true

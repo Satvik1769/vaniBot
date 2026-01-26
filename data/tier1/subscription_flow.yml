@@ -1,0 +1,110 @@
+version: "3.1"
+
+flows:
+  check_subscription:
+    description: Check subscription status and validity
+    name: Subscription Status Flow
+
+    steps:
+      - id: "start"
+        action: action_check_subscription
+        next: "show_status"
+
+      - id: "show_status"
+        action: utter_subscription_status
+        next: "check_expiring"
+
+      - id: "check_expiring"
+        next:
+          - if: slots.subscription_expiring_soon == true
+            then: "offer_renewal"
+          - else: "end_flow"
+
+      - id: "offer_renewal"
+        action: utter_offer_renewal
+        next: "wait_renewal_response"
+
+      - id: "wait_renewal_response"
+        collect: wants_renewal
+        next:
+          - if: slots.wants_renewal == "yes"
+            then: "start_renewal"
+          - else: "end_flow"
+
+      - id: "start_renewal"
+        link: renew_subscription
+
+      - id: "end_flow"
+        action: utter_anything_else
+
+  renew_subscription:
+    description: Renew or purchase a new subscription
+    name: Subscription Renewal Flow
+
+    steps:
+      - id: "start"
+        action: action_show_pricing
+        next: "show_plans"
+
+      - id: "show_plans"
+        action: utter_pricing_info
+        next: "collect_plan"
+
+      - id: "collect_plan"
+        collect: selected_plan
+        description: Collect selected plan type
+        next: "confirm_plan"
+        ask_before_filling: true
+        utter: utter_ask_plan_selection
+
+      - id: "confirm_plan"
+        action: utter_confirm_plan
+        next: "wait_confirmation"
+
+      - id: "wait_confirmation"
+        collect: plan_confirmed
+        next:
+          - if: slots.plan_confirmed == "yes"
+            then: "process_renewal"
+          - else: "collect_plan"
+
+      - id: "process_renewal"
+        action: action_process_renewal
+        next: "show_confirmation"
+
+      - id: "show_confirmation"
+        action: utter_renewal_success
+        next: "end_flow"
+
+      - id: "end_flow"
+        action: utter_anything_else
+
+  explain_pricing:
+    description: Explain pricing and plans
+    name: Pricing Explanation Flow
+
+    steps:
+      - id: "start"
+        action: action_show_pricing
+        next: "show_pricing"
+
+      - id: "show_pricing"
+        action: utter_pricing_info
+        next: "ask_subscribe"
+
+      - id: "ask_subscribe"
+        action: utter_ask_subscribe
+        next: "wait_response"
+
+      - id: "wait_response"
+        collect: wants_subscription
+        next:
+          - if: slots.wants_subscription == "yes"
+            then: "start_renewal"
+          - else: "end_flow"
+
+      - id: "start_renewal"
+        link: renew_subscription
+
+      - id: "end_flow"
+        action: utter_anything_else

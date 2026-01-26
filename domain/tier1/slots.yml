@@ -1,0 +1,359 @@
+version: "3.1"
+
+slots:
+  # ============================================
+  # DRIVER SLOTS
+  # ============================================
+  driver_phone:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  driver_id:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  driver_name:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  preferred_language:
+    type: categorical
+    values:
+      - hi
+      - en
+      - hi-en
+    mappings:
+      - type: custom
+    influence_conversation: true
+
+  # ============================================
+  # SWAP & INVOICE SLOTS
+  # ============================================
+  time_period:
+    type: categorical
+    values:
+      - today
+      - yesterday
+      - last_week
+      - last_month
+      - all
+    mappings:
+      - type: from_entity
+        entity: time_period
+    influence_conversation: false
+
+  swap_history:
+    type: list
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  invoice_id:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: invoice_id
+    influence_conversation: false
+
+  invoice_details:
+    type: any
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  wants_invoice_detail:
+    type: categorical
+    values:
+      - yes
+      - no
+    mappings:
+      - type: from_intent
+        intent: affirm
+        value: yes
+      - type: from_intent
+        intent: deny
+        value: no
+      - type: from_intent
+        intent: explain_invoice
+        value: yes
+    influence_conversation: true
+
+  # ============================================
+  # STATION SLOTS
+  # ============================================
+  user_location:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: location
+      - type: from_text
+        conditions:
+          - active_loop: find_station
+    influence_conversation: false
+
+  user_latitude:
+    type: float
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  user_longitude:
+    type: float
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  nearest_stations:
+    type: list
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  station_identifier:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: station_name
+      - type: from_text
+        conditions:
+          - active_loop: check_availability
+    influence_conversation: false
+
+  station_availability:
+    type: any
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  wants_availability:
+    type: categorical
+    values:
+      - yes
+      - no
+    mappings:
+      - type: from_intent
+        intent: affirm
+        value: yes
+      - type: from_intent
+        intent: deny
+        value: no
+      - type: from_intent
+        intent: check_station_availability
+        value: yes
+    influence_conversation: true
+
+  # ============================================
+  # SUBSCRIPTION SLOTS
+  # ============================================
+  subscription_status:
+    type: any
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  subscription_expiring_soon:
+    type: bool
+    mappings:
+      - type: custom
+    influence_conversation: true
+
+  selected_plan:
+    type: categorical
+    values:
+      - DAILY
+      - WEEKLY
+      - MONTHLY
+      - YEARLY
+    mappings:
+      - type: from_entity
+        entity: plan_type
+      - type: from_text
+        conditions:
+          - active_loop: renew_subscription
+    influence_conversation: false
+
+  pricing_info:
+    type: any
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  wants_renewal:
+    type: categorical
+    values:
+      - yes
+      - no
+    mappings:
+      - type: from_intent
+        intent: affirm
+        value: yes
+      - type: from_intent
+        intent: deny
+        value: no
+      - type: from_intent
+        intent: renew_subscription
+        value: yes
+    influence_conversation: true
+
+  plan_confirmed:
+    type: categorical
+    values:
+      - yes
+      - no
+    mappings:
+      - type: from_intent
+        intent: affirm
+        value: yes
+      - type: from_intent
+        intent: deny
+        value: no
+    influence_conversation: true
+
+  wants_subscription:
+    type: categorical
+    values:
+      - yes
+      - no
+    mappings:
+      - type: from_intent
+        intent: affirm
+        value: yes
+      - type: from_intent
+        intent: deny
+        value: no
+    influence_conversation: true
+
+  # ============================================
+  # DSK & LEAVE SLOTS
+  # ============================================
+  service_type:
+    type: categorical
+    values:
+      - activation
+      - repair
+      - support
+      - battery_replacement
+    mappings:
+      - type: from_entity
+        entity: service_type
+      - type: from_text
+        conditions:
+          - active_loop: find_dsk
+    influence_conversation: false
+
+  nearest_dsk:
+    type: any
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  activation_info:
+    type: any
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  leave_start_date:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: leave_date
+      - type: from_text
+        conditions:
+          - active_loop: apply_leave
+    influence_conversation: false
+
+  leave_end_date:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: leave_date
+      - type: from_text
+        conditions:
+          - active_loop: apply_leave
+    influence_conversation: false
+
+  leave_reason:
+    type: text
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: apply_leave
+    influence_conversation: false
+
+  leave_status:
+    type: any
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  leave_confirmed:
+    type: categorical
+    values:
+      - yes
+      - no
+    mappings:
+      - type: from_intent
+        intent: affirm
+        value: yes
+      - type: from_intent
+        intent: deny
+        value: no
+    influence_conversation: true
+
+  wants_apply_leave:
+    type: categorical
+    values:
+      - yes
+      - no
+    mappings:
+      - type: from_intent
+        intent: affirm
+        value: yes
+      - type: from_intent
+        intent: deny
+        value: no
+      - type: from_intent
+        intent: apply_leave
+        value: yes
+    influence_conversation: true
+
+  # ============================================
+  # SENTIMENT & CONFIDENCE SLOTS
+  # ============================================
+  current_sentiment:
+    type: float
+    mappings:
+      - type: custom
+    influence_conversation: true
+
+  current_confidence:
+    type: float
+    mappings:
+      - type: custom
+    influence_conversation: true
+
+  low_confidence_count:
+    type: float
+    initial_value: 0
+    mappings:
+      - type: custom
+    influence_conversation: true
+
+  should_escalate:
+    type: bool
+    mappings:
+      - type: custom
+    influence_conversation: true
+
+  escalation_reason:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false

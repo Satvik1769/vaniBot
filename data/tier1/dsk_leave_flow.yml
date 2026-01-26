@@ -1,0 +1,128 @@
+version: "3.1"
+
+flows:
+  find_dsk:
+    description: Find nearest DSK for services
+    name: DSK Finder Flow
+
+    steps:
+      - id: "start"
+        collect: service_type
+        description: Collect the type of service needed
+        next: "collect_location"
+        ask_before_filling: true
+        utter: utter_ask_service_type
+
+      - id: "collect_location"
+        collect: user_location
+        description: Collect user's location
+        next: "find_dsk"
+        ask_before_filling: true
+        utter: utter_ask_location_for_dsk
+
+      - id: "find_dsk"
+        action: action_find_nearest_dsk
+        next: "show_dsk"
+
+      - id: "show_dsk"
+        action: utter_nearest_dsk
+        next: "check_activation"
+
+      - id: "check_activation"
+        next:
+          - if: slots.service_type == "activation"
+            then: "show_activation_info"
+          - else: "end_flow"
+
+      - id: "show_activation_info"
+        action: action_get_activation_info
+        next: "utter_activation"
+
+      - id: "utter_activation"
+        action: utter_activation_info
+        next: "end_flow"
+
+      - id: "end_flow"
+        action: utter_anything_else
+
+  apply_leave:
+    description: Apply for leave
+    name: Leave Application Flow
+
+    steps:
+      - id: "start"
+        collect: leave_start_date
+        description: Collect leave start date
+        next: "collect_end_date"
+        ask_before_filling: true
+        utter: utter_ask_leave_start_date
+
+      - id: "collect_end_date"
+        collect: leave_end_date
+        description: Collect leave end date
+        next: "collect_reason"
+        ask_before_filling: true
+        utter: utter_ask_leave_end_date
+
+      - id: "collect_reason"
+        collect: leave_reason
+        description: Collect reason for leave (optional)
+        next: "confirm_leave"
+        ask_before_filling: true
+        utter: utter_ask_leave_reason
+
+      - id: "confirm_leave"
+        action: utter_confirm_leave
+        next: "wait_confirmation"
+
+      - id: "wait_confirmation"
+        collect: leave_confirmed
+        next:
+          - if: slots.leave_confirmed == "yes"
+            then: "submit_leave"
+          - else: "cancelled"
+
+      - id: "submit_leave"
+        action: action_apply_leave
+        next: "show_confirmation"
+
+      - id: "show_confirmation"
+        action: utter_leave_submitted
+        next: "end_flow"
+
+      - id: "cancelled"
+        action: utter_leave_cancelled
+        next: "end_flow"
+
+      - id: "end_flow"
+        action: utter_anything_else
+
+  check_leave_status:
+    description: Check leave status
+    name: Leave Status Flow
+
+    steps:
+      - id: "start"
+        action: action_check_leave_status
+        next: "show_status"
+
+      - id: "show_status"
+        action: utter_leave_status
+        next: "ask_apply"
+
+      - id: "ask_apply"
+        action: utter_ask_apply_leave
+        next: "wait_response"
+
+      - id: "wait_response"
+        collect: wants_apply_leave
+        next:
+          - if: slots.wants_apply_leave == "yes"
+            then: "start_apply"
+          - else: "end_flow"
+
+      - id: "start_apply"
+        link: apply_leave
+
+      - id: "end_flow"
+        action: utter_anything_else

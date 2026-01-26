@@ -1,0 +1,452 @@
+version: "3.1"
+
+nlu:
+# ============================================
+# USE CASE 1: Swap History & Invoice
+# ============================================
+- intent: check_swap_history
+  examples: |
+    - mera swap history dikhao
+    - swap history dekhni hai
+    - aaj kitne swap kiye maine
+    - meri swap ki list dikhao
+    - last week ke swaps
+    - kal ke swaps dikhao
+    - show my swap history
+    - swap record dekhna hai
+    - kitne swap ho gaye
+    - mere swaps check karo
+    - aaj ke swaps
+    - yesterday swaps
+    - pichhle hafte ke swaps
+    - mahine ke swaps dikhao
+    - swap count batao
+    - total swaps kya hai
+    - mera swap batao
+    - swap details chahiye
+    - recent swaps dikhao
+    - saare swaps dekhne hain
+
+- intent: explain_invoice
+  examples: |
+    - yeh invoice samjhao
+    - invoice explain karo
+    - invoice ki details batao
+    - [₹35](amount) kyun kata
+    - yeh charge kya hai
+    - [35 rupaye](amount) kyun liye
+    - extra charge kyun hai
+    - paisa kyun kata
+    - bill samjhao
+    - invoice number [INV-202601-000001](invoice_id) ki detail
+    - [50 rupees](amount) ka bill explain karo
+    - yeh amount kya hai
+    - charge breakdown batao
+    - kya charge hua hai
+    - payment kya hua
+    - bill detail chahiye
+    - invoice kholke batao
+    - why this charge
+    - paise kyun kate
+    - bill mein kya hai
+
+# ============================================
+# USE CASE 2: Station Finder & Availability
+# ============================================
+- intent: find_nearest_station
+  examples: |
+    - nearest station kahan hai
+    - paas mein station
+    - station dhundho
+    - swap station kahan milega
+    - [Laxmi Nagar](location) mein station
+    - [Dwarka](location) ke paas station
+    - sabse nazdeeki station
+    - station location batao
+    - kahan swap karun
+    - nearby station dikhao
+    - [Delhi](location) mein stations
+    - [Noida](location) station
+    - closest swap point
+    - station directions
+    - station kaise jaun
+    - mere paas station
+    - yahan se nearest
+    - swap karne kahan jaun
+    - station ka address
+    - [Rohini](location) station batao
+
+- intent: check_station_availability
+  examples: |
+    - kitni battery available hai
+    - [Dwarka Mor](station_name) pe battery hai
+    - station pe stock hai kya
+    - availability check karo
+    - batteries milegi kya
+    - [Laxmi Nagar Station](station_name) mein kitni battery
+    - abhi kitni battery hai
+    - stock check karo
+    - battery available hai kya
+    - slot available hai
+    - charged battery hai kya
+    - station khali hai kya
+    - kitni battery ready hai
+    - availability batao
+    - kya battery milegi
+    - [Okhla](station_name) pe availability
+    - station mein jagah hai
+    - swap ho payega kya
+    - battery ka stock
+    - real time availability
+
+# ============================================
+# USE CASE 3: Subscription & Pricing
+# ============================================
+- intent: check_subscription
+  examples: |
+    - mera plan kab expire hoga
+    - subscription status
+    - plan ki validity check karo
+    - kitne din bache hain
+    - mera subscription dekhao
+    - plan details batao
+    - subscription kab tak hai
+    - validity kitni hai
+    - plan expire ho gaya kya
+    - mera current plan
+    - subscription check karo
+    - plan status dikhao
+    - kitne swaps bache hain
+    - remaining swaps
+    - subscription valid hai kya
+    - plan info chahiye
+    - mere plan ki details
+    - subscription kab tak valid
+    - expiry date kya hai
+    - plan khatam hone wala hai kya
+
+- intent: renew_subscription
+  examples: |
+    - plan renew karna hai
+    - subscription renew karo
+    - [monthly](plan_type) plan lena hai
+    - plan upgrade karo
+    - naya plan chahiye
+    - subscription extend karo
+    - [weekly](plan_type) plan lelo
+    - recharge karna hai
+    - plan activate karo
+    - subscription buy karo
+    - [daily](plan_type) plan renew
+    - plan continue karna hai
+    - subscription jaari rakho
+    - [yearly](plan_type) plan lena hai
+    - plan change karna hai
+    - new subscription
+    - plan extend karo
+    - resubscribe karna hai
+    - subscription renew kar do
+    - plan lena hai
+
+- intent: explain_pricing
+  examples: |
+    - pricing kya hai
+    - plan ki price batao
+    - kitne ka hai [monthly](plan_type)
+    - rates kya hain
+    - [daily](plan_type) plan kitne mein
+    - subscription ka price
+    - plan prices dikhao
+    - kitna paisa lagega
+    - cost kya hai
+    - charges kya hain
+    - [weekly](plan_type) kitne ka hai
+    - sab plans ke rates
+    - pricing details
+    - plan comparison
+    - sabse sasta plan
+    - best value plan
+    - unlimited plan price
+    - extra swap ka rate
+    - all plans price
+    - monthly kitne mein milta hai
+
+# ============================================
+# USE CASE 4: Leave & DSK
+# ============================================
+- intent: apply_leave
+  examples: |
+    - chutti leni hai
+    - [kal](leave_date) leave chahiye
+    - [3 din](leave_duration) ki chutti
+    - leave apply karna hai
+    - off lena hai
+    - holiday chahiye
+    - [next week](leave_date) leave
+    - break lena hai
+    - chutti ka application
+    - leave request
+    - [2 days](leave_duration) off chahiye
+    - vacation leni hai
+    - [monday](leave_date) se chutti
+    - leave lagani hai
+    - time off chahiye
+    - rest lena hai
+    - chutti mark karo
+    - holiday apply karo
+    - leave daal do
+    - off day chahiye
+
+- intent: find_nearest_dsk
+  examples: |
+    - DSK kahan hai
+    - service center kahan hai
+    - [activation](service_type) ke liye kahan jaun
+    - nearest DSK batao
+    - [repair](service_type) kahan hoga
+    - dealer kahan milega
+    - support center kahan hai
+    - service point dhundho
+    - [Delhi](location) mein DSK
+    - help center kahan hai
+    - kiosk kahan hai
+    - [battery replacement](service_type) kahan
+    - registration kahan hogi
+    - signup kahan karun
+    - new account kahan banaun
+    - service location
+    - dealer service kiosk
+    - account activate kahan
+    - [support](service_type) ke liye DSK
+    - help desk kahan hai
+
+- intent: check_leave_status
+  examples: |
+    - leave status kya hai
+    - meri chutti approve hui
+    - leave check karo
+    - holiday status
+    - chutti mili kya
+    - leave pending hai kya
+    - off approved hai kya
+    - leave ka update
+    - chutti ki status
+    - mera leave dekhao
+    - leave approved hai kya
+    - holiday status batao
+    - leave request ka status
+    - pending leaves dikhao
+    - leave history
+    - upcoming leaves
+    - approved chutti dikhao
+    - leave balance
+    - leave status check
+    - meri leave application
+
+# ============================================
+# COMMON INTENTS
+# ============================================
+- intent: greeting
+  examples: |
+    - hello
+    - hi
+    - namaste
+    - namaskar
+    - hey
+    - good morning
+    - good evening
+    - kaise ho
+    - kya haal hai
+    - suno
+
+- intent: goodbye
+  examples: |
+    - bye
+    - goodbye
+    - alvida
+    - dhanyavaad
+    - thanks
+    - thank you
+    - shukriya
+    - theek hai bye
+    - ok bye
+    - chalte hain
+    - baad mein baat
+    - tata
+
+- intent: affirm
+  examples: |
+    - haan
+    - yes
+    - ji
+    - bilkul
+    - theek hai
+    - okay
+    - ok
+    - sahi hai
+    - haan ji
+    - yes please
+    - kar do
+    - chalo
+    - done
+    - agreed
+
+- intent: deny
+  examples: |
+    - nahi
+    - no
+    - na
+    - nope
+    - mat karo
+    - rehne do
+    - cancel
+    - nahi chahiye
+    - no thanks
+    - ruko
+    - band karo
+    - leave it
+
+- intent: request_human
+  examples: |
+    - agent se baat karni hai
+    - human se connect karo
+    - kisi se baat karani hai
+    - customer care
+    - executive se baat karo
+    - real person chahiye
+    - bot nahi chahiye
+    - insaan se baat
+    - support team
+    - help desk
+    - complaint karna hai
+    - manager se baat
+    - escalate karo
+    - senior se baat
+    - live agent
+
+- intent: out_of_scope
+  examples: |
+    - pizza order karo
+    - weather kaisa hai
+    - movie tickets
+    - train timing
+    - cab book karo
+    - kuch aur baat karo
+    - joke sunao
+    - gaana sunao
+    - news batao
+    - cricket score
+
+# ============================================
+# ENTITIES SYNONYMS
+# ============================================
+- synonym: today
+  examples: |
+    - aaj
+    - today
+    - abhi
+
+- synonym: yesterday
+  examples: |
+    - kal
+    - yesterday
+    - beeta hua din
+
+- synonym: last_week
+  examples: |
+    - pichhle hafte
+    - last week
+    - is hafte
+
+- synonym: last_month
+  examples: |
+    - pichhle mahine
+    - last month
+    - is mahine
+
+- synonym: daily
+  examples: |
+    - daily
+    - rozana
+    - ek din ka
+    - per day
+
+- synonym: weekly
+  examples: |
+    - weekly
+    - haftewar
+    - 7 din ka
+    - saptahik
+
+- synonym: monthly
+  examples: |
+    - monthly
+    - mahine ka
+    - 30 din ka
+    - maasik
+
+- synonym: yearly
+  examples: |
+    - yearly
+    - saal ka
+    - annual
+    - varshik
+
+- synonym: activation
+  examples: |
+    - activation
+    - new registration
+    - signup
+    - account banana
+
+- synonym: repair
+  examples: |
+    - repair
+    - battery issue
+    - problem fix
+    - theek karna
+
+- synonym: support
+  examples: |
+    - support
+    - help
+    - madad
+    - sahayata
+
+# ============================================
+# LOOKUP TABLES
+# ============================================
+- lookup: location
+  examples: |
+    - Delhi
+    - Noida
+    - Gurgaon
+    - Gurugram
+    - Laxmi Nagar
+    - Dwarka
+    - Rohini
+    - Mayur Vihar
+    - Okhla
+    - Sarita Vihar
+    - Sector 62
+    - Sector 18
+    - MG Road
+
+- lookup: station_name
+  examples: |
+    - Laxmi Nagar Station
+    - Dwarka Mor
+    - Mayur Vihar Station
+    - Rohini Station
+    - Okhla Station
+    - Sector 62 Station
+    - MG Road Station
+    - Palam Station
+
+- lookup: plan_type
+  examples: |
+    - daily
+    - weekly
+    - monthly
+    - yearly
+    - unlimited

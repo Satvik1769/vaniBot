@@ -1,0 +1,282 @@
+"""Deepgram client for Speech-to-Text and Text-to-Speech."""
+import os
+import asyncio
+from typing import Optional, AsyncGenerator, Callable
+from dataclasses import dataclass
+import logging
+
+from deepgram import (
+    DeepgramClient,
+    DeepgramClientOptions,
+    LiveTranscriptionEvents,
+    LiveOptions,
+    SpeakOptions,
+)
+
+logger = logging.getLogger(__name__)
+
+DEEPGRAM_API_KEY = os.getenv("DEEPGRAM_API_KEY")
+
+
+@dataclass
+class TranscriptionResult:
+    """Result from speech-to-text transcription."""
+    text: str
+    confidence: float
+    is_final: bool
+    language: str
+    words: list
+
+
+@dataclass
+class TTSResult:
+    """Result from text-to-speech synthesis."""
+    audio_data: bytes
+    content_type: str
+    duration_ms: Optional[int] = None
+
+
+class DeepgramSTT:
+    """Deepgram Speech-to-Text client with streaming support."""
+
+    def __init__(self, api_key: str = None):
+        self.api_key = api_key or DEEPGRAM_API_KEY
+        if not self.api_key:
+            raise ValueError("Deepgram API key is required")
+
+        config = DeepgramClientOptions(options={"keepalive": "true"})
+        self.client = DeepgramClient(self.api_key, config)
+        self.connection = None
+        self.transcript_callback: Optional[Callable] = None
+
+    async def start_streaming(
+        self,
+        on_transcript: Callable[[TranscriptionResult], None],
+        language: str = "hi",
+        model: str = "nova-2",
+        interim_results: bool = True
+    ):
+        """Start streaming transcription."""
+        self.transcript_callback = on_transcript
+
+        options = LiveOptions(
+            model=model,
+            language=language,
+            smart_format=True,
+            interim_results=interim_results,
+            utterance_end_ms=1500,
+            vad_events=True,
+            endpointing=300,
+            encoding="linear16",
+            channels=1,
+            sample_rate=16000,
+        )
+
+        self.connection = self.client.listen.asynclive.v("1")
+
+        # Set up event handlers
+        self.connection.on(LiveTranscriptionEvents.Open, self._on_open)
+        self.connection.on(LiveTranscriptionEvents.Transcript, self._on_transcript)
+        self.connection.on(LiveTranscriptionEvents.Error, self._on_error)
+        self.connection.on(LiveTranscriptionEvents.Close, self._on_close)
+
+        await self.connection.start(options)
+        logger.info("Deepgram streaming started")
+
+    async def send_audio(self, audio_data: bytes):
+        """Send audio chunk for transcription."""
+        if self.connection:
+            await self.connection.send(audio_data)
+
+    async def stop_streaming(self):
+        """Stop streaming transcription."""
+        if self.connection:
+            await self.connection.finish()
+            self.connection = None
+            logger.info("Deepgram streaming stopped")
+
+    async def _on_open(self, *args, **kwargs):
+        logger.debug("Deepgram connection opened")
+
+    async def _on_transcript(self, *args, **kwargs):
+        result = kwargs.get("result") or (args[1] if len(args) > 1 else None)
+        if not result:
+            return
+
+        try:
+            channel = result.channel
+            alternatives = channel.alternatives
+
+            if alternatives:
+                alt = alternatives[0]
+                transcript = alt.transcript
+
+                if transcript:
+                    transcription_result = TranscriptionResult(
+                        text=transcript,
+                        confidence=alt.confidence,
+                        is_final=result.is_final,
+                        language=result.channel.detected_language or "hi",
+                        words=[{
+                            "word": w.word,
+                            "start": w.start,
+                            "end": w.end,
+                            "confidence": w.confidence
+                        } for w in (alt.words or [])]
+                    )
+
+                    if self.transcript_callback:
+                        await self.transcript_callback(transcription_result)
+
+        except Exception as e:
+            logger.error(f"Error processing transcript: {e}")
+
+    async def _on_error(self, *args, **kwargs):
+        error = kwargs.get("error") or (args[1] if len(args) > 1 else None)
+        logger.error(f"Deepgram error: {error}")
+
+    async def _on_close(self, *args, **kwargs):
+        logger.debug("Deepgram connection closed")
+
+
+class DeepgramTTS:
+    """Deepgram Text-to-Speech client."""
+
+    # Voice mappings for different languages
+    VOICES = {
+        "hi": "aura-asteria-hi",      # Hindi female voice
+        "hi-en": "aura-asteria-hi",    # Hinglish - use Hindi voice
+        "en": "aura-asteria-en",       # English female voice
+    }
+
+    def __init__(self, api_key: str = None):
+        self.api_key = api_key or DEEPGRAM_API_KEY
+        if not self.api_key:
+            raise ValueError("Deepgram API key is required")
+
+        self.client = DeepgramClient(self.api_key)
+
+    async def synthesize(
+        self,
+        text: str,
+        language: str = "hi-en",
+        model: str = None
+    ) -> TTSResult:
+        """Synthesize text to speech."""
+        # Select appropriate voice
+        voice = model or self.VOICES.get(language, self.VOICES["hi-en"])
+
+        options = SpeakOptions(
+            model=voice,
+            encoding="linear16",
+            sample_rate=16000,
+            container="wav"
+        )
+
+        try:
+            response = await self.client.speak.asyncrest.v("1").save(
+                {"text": text},
+                options,
+                filename=None  # Return bytes instead of saving
+            )
+
+            return TTSResult(
+                audio_data=response.stream.getvalue() if hasattr(response, 'stream') else response,
+                content_type="audio/wav"
+            )
+
+        except Exception as e:
+            logger.error(f"TTS synthesis error: {e}")
+            raise
+
+    async def synthesize_stream(
+        self,
+        text: str,
+        language: str = "hi-en"
+    ) -> AsyncGenerator[bytes, None]:
+        """Stream synthesized audio in chunks."""
+        voice = self.VOICES.get(language, self.VOICES["hi-en"])
+
+        options = SpeakOptions(
+            model=voice,
+            encoding="linear16",
+            sample_rate=16000,
+        )
+
+        try:
+            # Use streaming endpoint
+            response = await self.client.speak.asyncrest.v("1").stream_raw(
+                {"text": text},
+                options
+            )
+
+            async for chunk in response.iter_bytes():
+                yield chunk
+
+        except Exception as e:
+            logger.error(f"TTS streaming error: {e}")
+            raise
+
+
+class DeepgramLanguageDetector:
+    """Detect language from text or audio."""
+
+    # Common Hindi words (Romanized)
+    HINDI_MARKERS = {
+        "hai", "hain", "kya", "kahan", "kaise", "kyun", "mera", "meri",
+        "aapka", "aapki", "batao", "dikhao", "chahiye", "karo", "karein",
+        "nahi", "haan", "theek", "achha", "bahut", "bohot", "abhi",
+        "kal", "aaj", "yahan", "wahan", "kaun", "kab", "kitna", "kitni"
+    }
+
+    # Common English words
+    ENGLISH_MARKERS = {
+        "the", "is", "are", "was", "were", "have", "has", "can", "could",
+        "would", "should", "will", "what", "where", "when", "how", "why",
+        "please", "help", "need", "want", "show", "check", "find"
+    }
+
+    @classmethod
+    def detect_from_text(cls, text: str) -> str:
+        """Detect language from text."""
+        if not text:
+            return "hi-en"
+
+        # Check for Devanagari script
+        has_devanagari = any('\u0900' <= c <= '\u097F' for c in text)
+        if has_devanagari:
+            return "hi"
+
+        # Count marker words
+        words = set(text.lower().split())
+        hindi_count = len(words & cls.HINDI_MARKERS)
+        english_count = len(words & cls.ENGLISH_MARKERS)
+
+        total_markers = hindi_count + english_count
+        if total_markers == 0:
+            return "hi-en"  # Default to Hinglish
+
+        # Determine language based on ratio
+        hindi_ratio = hindi_count / total_markers
+
+        if hindi_ratio > 0.7:
+            return "hi"
+        elif hindi_ratio < 0.3:
+            return "en"
+        else:
+            return "hi-en"
+
+    @classmethod
+    def should_switch_language(cls, current: str, detected: str) -> bool:
+        """Check if language should be switched."""
+        # Don't switch if current is Hinglish (flexible)
+        if current == "hi-en":
+            return False
+
+        # Switch if detected is significantly different
+        if current == "hi" and detected == "en":
+            return True
+        if current == "en" and detected == "hi":
+            return True
+
+        return False

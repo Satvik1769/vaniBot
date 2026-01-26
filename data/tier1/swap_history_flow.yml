@@ -1,0 +1,53 @@
+version: "3.1"
+
+flows:
+  swap_history:
+    description: Handle swap history lookup and invoice explanation
+    name: Swap History Flow
+
+    steps:
+      - id: "start"
+        action: action_fetch_swap_history
+        next: "show_history"
+
+      - id: "show_history"
+        action: utter_swap_history
+        next: "ask_invoice"
+
+      - id: "ask_invoice"
+        action: utter_ask_invoice_clarification
+        next: "wait_response"
+
+      - id: "wait_response"
+        collect: wants_invoice_detail
+        next:
+          - if: slots.wants_invoice_detail == "yes"
+            then: "explain_invoice"
+          - else: "end_flow"
+
+      - id: "explain_invoice"
+        action: action_explain_invoice
+        next: "show_invoice"
+
+      - id: "show_invoice"
+        action: utter_invoice_explanation
+        next: "end_flow"
+
+      - id: "end_flow"
+        action: utter_anything_else
+
+  explain_invoice:
+    description: Explain a specific invoice or charge
+    name: Invoice Explanation Flow
+
+    steps:
+      - id: "start"
+        action: action_explain_invoice
+        next: "show_explanation"
+
+      - id: "show_explanation"
+        action: utter_invoice_explanation
+        next: "ask_more"
+
+      - id: "ask_more"
+        action: utter_anything_else

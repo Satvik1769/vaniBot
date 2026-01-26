@@ -1,0 +1,67 @@
+version: "3.1"
+
+flows:
+  find_station:
+    description: Find nearest Battery Smart station
+    name: Station Finder Flow
+
+    steps:
+      - id: "start"
+        collect: user_location
+        description: Collect user's location
+        next: "find_stations"
+        ask_before_filling: true
+        utter: utter_ask_location
+
+      - id: "find_stations"
+        action: action_find_nearest_stations
+        next: "show_stations"
+
+      - id: "show_stations"
+        action: utter_nearest_stations
+        next: "ask_availability"
+
+      - id: "ask_availability"
+        action: utter_ask_check_availability
+        next: "wait_availability_response"
+
+      - id: "wait_availability_response"
+        collect: wants_availability
+        next:
+          - if: slots.wants_availability == "yes"
+            then: "check_availability"
+          - else: "end_flow"
+
+      - id: "check_availability"
+        action: action_check_station_availability
+        next: "show_availability"
+
+      - id: "show_availability"
+        action: utter_station_availability
+        next: "end_flow"
+
+      - id: "end_flow"
+        action: utter_anything_else
+
+  check_availability:
+    description: Check battery availability at a station
+    name: Station Availability Flow
+
+    steps:
+      - id: "start"
+        collect: station_identifier
+        description: Collect station name or code
+        next: "fetch_availability"
+        ask_before_filling: true
+        utter: utter_ask_station_name
+
+      - id: "fetch_availability"
+        action: action_check_station_availability
+        next: "show_availability"
+
+      - id: "show_availability"
+        action: utter_station_availability
+        next: "end_flow"
+
+      - id: "end_flow"
+        action: utter_anything_else
