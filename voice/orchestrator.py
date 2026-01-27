@@ -1,4 +1,4 @@
-"""Voice orchestrator for integrating Deepgram with Rasa."""
+"""Voice orchestrator for integrating Deepgram with Rasa via Twilio Media Streams."""
 import os
 import asyncio
 import uuid
@@ -15,10 +15,24 @@ from .deepgram_client import (
     TranscriptionResult,
     TTSResult
 )
+from .twilio_handler import (
+    TwilioHandler,
+    strip_wav_header,
+    resample_8k_to_16k,
+    resample_16k_to_8k,
+    TWILIO_SAMPLE_RATE,
+)
 
 logger = logging.getLogger(__name__)
 
 RASA_URL = os.getenv("RASA_URL", "http://localhost:5005")
+
+# Deepgram operates at 16kHz, Twilio at 8kHz
+DEEPGRAM_SAMPLE_RATE = 16000
+
+# Buffer ~500ms of audio before sending to STT
+MIN_BUFFER_DURATION_MS = 500
+CHUNK_DURATION_MS = 20  # Twilio sends ~20ms chunks
 
 
 @dataclass
@@ -35,10 +49,15 @@ class VoiceSession:
     sentiment_history: list = field(default_factory=list)
     confidence_history: list = field(default_factory=list)
     is_active: bool = True
+    # Twilio-specific
+    stream_sid: Optional[str] = None
+    call_sid: Optional[str] = None
+    audio_buffer: bytes = b""
+    buffer_duration_ms: int = 0
 
 
 class VoiceOrchestrator:
-    """Orchestrates voice interaction between Deepgram and Rasa."""
+    """Orchestrates voice interaction between Deepgram and Rasa via Twilio."""
 
     def __init__(
         self,
@@ -64,6 +83,8 @@ class VoiceOrchestrator:
         self,
         phone_number: str,
         session_id: str = None,
+        stream_sid: str = None,
+        call_sid: str = None,
         metadata: Dict[str, Any] = None
     ) -> VoiceSession:
         """Start a new voice session."""
@@ -71,39 +92,50 @@ class VoiceOrchestrator:
 
         session = VoiceSession(
             session_id=session_id,
-            phone_number=phone_number
+            phone_number=phone_number,
+            stream_sid=stream_sid,
+            call_sid=call_sid,
         )
         self.sessions[session_id] = session
 
-        # Send session start to Rasa
-        await self._send_to_rasa(
-            session_id=session_id,
-            message="/session_start",
-            metadata={
-                "phone_number": phone_number,
-                "channel": "voice",
-                **(metadata or {})
-            }
-        )
-
-        # Get initial greeting
-        greeting = await self._get_greeting(session)
-
-        # Synthesize greeting
-        if greeting:
-            audio = await self.tts.synthesize(greeting, session.language)
-            if self.on_audio_output:
-                self.on_audio_output(audio.audio_data)
+        # Notify Rasa of session start
+        try:
+            await self._send_to_rasa(
+                session_id=session_id,
+                message="/session_start",
+                metadata={
+                    "phone_number": phone_number,
+                    "channel": "voice",
+                    **(metadata or {})
+                }
+            )
+        except Exception as e:
+            logger.warning(f"Failed to send session_start to Rasa: {e}")
 
         logger.info(f"Started voice session: {session_id}")
         return session
 
+    async def synthesize_for_twilio(self, text: str, language: str = "hi-en") -> bytes:
+        """Synthesize text and return raw PCM at 8kHz (ready for Twilio encoding).
+
+        Deepgram TTS produces 16kHz WAV. This strips the WAV header and
+        downsamples to 8kHz linear PCM so TwilioHandler can encode to mulaw.
+        """
+        audio = await self.tts.synthesize(text, language)
+        raw_pcm = strip_wav_header(audio.audio_data)
+        return resample_16k_to_8k(raw_pcm)
+
     async def process_audio(
         self,
         session_id: str,
-        audio_data: bytes
+        pcm_audio_8k: bytes,
     ) -> Optional[bytes]:
-        """Process incoming audio and return response audio."""
+        """Process incoming 8kHz PCM audio and return 8kHz PCM response.
+
+        The caller (TwilioHandler) decodes mulaw -> PCM before calling this.
+        This buffers audio, transcribes via Deepgram, sends to Rasa,
+        synthesizes the response, and returns 8kHz PCM.
+        """
         session = self.sessions.get(session_id)
         if not session or not session.is_active:
             logger.warning(f"Invalid or inactive session: {session_id}")
@@ -111,52 +143,60 @@ class VoiceOrchestrator:
 
         session.last_activity = datetime.now()
 
-        # Transcribe audio
-        transcript = await self._transcribe_audio(audio_data, session.language)
+        # Accumulate audio
+        session.audio_buffer += pcm_audio_8k
+        session.buffer_duration_ms += CHUNK_DURATION_MS
 
+        if session.buffer_duration_ms < MIN_BUFFER_DURATION_MS:
+            return None  # Keep buffering
+
+        # Grab buffer and reset
+        buffered = session.audio_buffer
+        session.audio_buffer = b""
+        session.buffer_duration_ms = 0
+
+        # Upsample 8kHz -> 16kHz for Deepgram
+        audio_16k = resample_8k_to_16k(buffered)
+
+        # Transcribe
+        transcript = await self._transcribe_audio(audio_16k, session.language)
         if not transcript or not transcript.text.strip():
             return None
 
-        # Update language if detected differently
+        # Language detection
         detected_lang = DeepgramLanguageDetector.detect_from_text(transcript.text)
         if DeepgramLanguageDetector.should_switch_language(session.language, detected_lang):
             session.language = detected_lang
             logger.info(f"Language switched to: {detected_lang}")
 
-        # Callback for transcription
         if self.on_transcription:
             await self.on_transcription(session_id, transcript)
 
-        # Send to Rasa and get response
+        # Send to Rasa
         rasa_response = await self._send_to_rasa(
             session_id=session_id,
             message=transcript.text,
             metadata={
                 "phone_number": session.phone_number,
                 "language": session.language,
-                "confidence": transcript.confidence
+                "confidence": transcript.confidence,
             }
         )
 
         session.turn_count += 1
 
-        # Check for handoff
+        # Check handoff
         if self._should_handoff(rasa_response):
             if self.on_handoff:
                 await self.on_handoff(session, rasa_response)
             return None
 
-        # Get bot response text
+        # Get response text and synthesize
         response_text = self._extract_response_text(rasa_response)
-
         if response_text:
-            # Callback for response
             if self.on_response:
                 await self.on_response(session_id, response_text)
-
-            # Synthesize response
-            audio = await self.tts.synthesize(response_text, session.language)
-            return audio.audio_data
+            return await self.synthesize_for_twilio(response_text, session.language)
 
         return None
 
@@ -173,8 +213,6 @@ class VoiceOrchestrator:
         async def handle_transcript(result: TranscriptionResult):
             if result.is_final and result.text.strip():
                 await on_transcript(result)
-
-                # Process the transcript
                 response_audio = await self.process_transcription(
                     session_id, result.text
                 )
@@ -195,7 +233,7 @@ class VoiceOrchestrator:
         session_id: str,
         text: str
     ) -> Optional[bytes]:
-        """Process a text transcription and return response audio."""
+        """Process text transcription and return 8kHz PCM response audio."""
         session = self.sessions.get(session_id)
         if not session or not session.is_active:
             return None
@@ -203,30 +241,23 @@ class VoiceOrchestrator:
         session.last_activity = datetime.now()
         session.turn_count += 1
 
-        # Send to Rasa
         rasa_response = await self._send_to_rasa(
             session_id=session_id,
             message=text,
             metadata={
                 "phone_number": session.phone_number,
-                "language": session.language
+                "language": session.language,
             }
         )
 
-        # Check for handoff
         if self._should_handoff(rasa_response):
             if self.on_handoff:
                 await self.on_handoff(session, rasa_response)
             return None
 
-        # Get response text
         response_text = self._extract_response_text(rasa_response)
-
         if response_text:
-            # Synthesize response
-            audio = await self.tts.synthesize(response_text, session.language)
-            return audio.audio_data
-
+            return await self.synthesize_for_twilio(response_text, session.language)
         return None
 
     async def end_session(
@@ -241,26 +272,21 @@ class VoiceOrchestrator:
 
         session.is_active = False
 
-        # Stop streaming if active
         await self.stt.stop_streaming()
 
-        # Send session end to Rasa
-        await self._send_to_rasa(
-            session_id=session_id,
-            message="/session_end",
-            metadata={"reason": reason}
-        )
+        try:
+            await self._send_to_rasa(
+                session_id=session_id,
+                message="/session_end",
+                metadata={"reason": reason}
+            )
+        except Exception as e:
+            logger.warning(f"Failed to send session_end to Rasa: {e}")
 
-        # Get farewell
-        farewell = "Dhanyavaad! Battery Smart ko choose karne ke liye shukriya."
-        audio = await self.tts.synthesize(farewell, session.language)
-
-        if self.on_audio_output:
-            self.on_audio_output(audio.audio_data)
-
-        # Clean up
         del self.sessions[session_id]
-        logger.info(f"Ended voice session: {session_id}")
+        logger.info(f"Ended voice session: {session_id} (reason={reason})")
+
+    # ── Internal helpers ────────────────────────────────────────
 
     async def _transcribe_audio(
         self,
@@ -269,7 +295,6 @@ class VoiceOrchestrator:
     ) -> Optional[TranscriptionResult]:
         """Transcribe audio using Deepgram."""
         try:
-            # Use non-streaming transcription for simple audio
             from deepgram import PrerecordedOptions
 
             client = self.stt.client
@@ -295,7 +320,6 @@ class VoiceOrchestrator:
                     language=language,
                     words=[]
                 )
-
         except Exception as e:
             logger.error(f"Transcription error: {e}")
 
@@ -318,13 +342,11 @@ class VoiceOrchestrator:
                         "metadata": metadata or {}
                     }
                 )
-
                 if response.status_code == 200:
                     return {"responses": response.json()}
                 else:
                     logger.error(f"Rasa error: {response.status_code}")
                     return {"responses": []}
-
         except Exception as e:
             logger.error(f"Error sending to Rasa: {e}")
             return {"responses": []}
@@ -333,30 +355,23 @@ class VoiceOrchestrator:
         """Get greeting message for new session."""
         if session.driver_name:
             return f"Namaste {session.driver_name}! Battery Smart mein aapka swagat hai. Main aapki kaise madad kar sakti hoon?"
-        else:
-            return "Namaste! Battery Smart mein aapka swagat hai. Main aapki kaise madad kar sakti hoon?"
+        return "Namaste! Battery Smart mein aapka swagat hai. Main aapki kaise madad kar sakti hoon?"
 
     def _should_handoff(self, rasa_response: Dict[str, Any]) -> bool:
         """Check if response indicates handoff needed."""
         responses = rasa_response.get("responses", [])
         for resp in responses:
-            # Check for handoff custom action response
             if resp.get("custom", {}).get("action") == "handoff":
                 return True
-            # Check for handoff utterance
-            if "agent se connect" in resp.get("text", "").lower():
-                return True
-            if "transfer" in resp.get("text", "").lower():
+            text = resp.get("text", "").lower()
+            if "agent se connect" in text or "transfer" in text:
                 return True
         return False
 
     def _extract_response_text(self, rasa_response: Dict[str, Any]) -> str:
         """Extract response text from Rasa response."""
         responses = rasa_response.get("responses", [])
-        texts = []
-        for resp in responses:
-            if "text" in resp:
-                texts.append(resp["text"])
+        texts = [r["text"] for r in responses if "text" in r]
         return " ".join(texts)
 
     def get_session(self, session_id: str) -> Optional[VoiceSession]:
@@ -366,7 +381,5 @@ class VoiceOrchestrator:
     def get_active_sessions(self) -> Dict[str, VoiceSession]:
         """Get all active sessions."""
         return {
-            sid: session
-            for sid, session in self.sessions.items()
-            if session.is_active
+            sid: s for sid, s in self.sessions.items() if s.is_active
         }

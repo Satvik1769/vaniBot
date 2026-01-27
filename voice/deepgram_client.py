@@ -4,13 +4,15 @@ import asyncio
 from typing import Optional, AsyncGenerator, Callable
 from dataclasses import dataclass
 import logging
+from dotenv import load_dotenv
+load_dotenv()
+
 
 from deepgram import (
     DeepgramClient,
     DeepgramClientOptions,
     LiveTranscriptionEvents,
     LiveOptions,
-    SpeakOptions,
 )
 
 logger = logging.getLogger(__name__)
@@ -166,18 +168,17 @@ class DeepgramTTS:
         # Select appropriate voice
         voice = model or self.VOICES.get(language, self.VOICES["hi-en"])
 
-        options = SpeakOptions(
-            model=voice,
-            encoding="linear16",
-            sample_rate=16000,
-            container="wav"
-        )
+        options = {
+            "model": voice,
+            "encoding": "linear16",
+            "sample_rate": 16000,
+            "container": "wav",
+        }
 
         try:
-            response = await self.client.speak.asyncrest.v("1").save(
+            response = await self.client.speak.asyncrest.v("1").stream_memory(
                 {"text": text},
                 options,
-                filename=None  # Return bytes instead of saving
             )
 
             return TTSResult(
@@ -197,11 +198,11 @@ class DeepgramTTS:
         """Stream synthesized audio in chunks."""
         voice = self.VOICES.get(language, self.VOICES["hi-en"])
 
-        options = SpeakOptions(
-            model=voice,
-            encoding="linear16",
-            sample_rate=16000,
-        )
+        options = {
+            "model": voice,
+            "encoding": "linear16",
+            "sample_rate": 16000,
+        }
 
         try:
             # Use streaming endpoint

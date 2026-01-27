@@ -22,11 +22,10 @@ class Settings(BaseSettings):
     DEEPGRAM_API_KEY: Optional[str] = None
     GEMINI_API_KEY: Optional[str] = None
 
-    # Amazon Connect
-    AWS_REGION: str = "ap-southeast-1"
-    CONNECT_INSTANCE_ID: Optional[str] = None
-    CONNECT_CONTACT_FLOW_ID: Optional[str] = None
-    CONNECT_QUEUE_ID: Optional[str] = None
+    # Twilio
+    TWILIO_ACCOUNT_SID: Optional[str] = None
+    TWILIO_AUTH_TOKEN: Optional[str] = None
+    TWILIO_PHONE_NUMBER: Optional[str] = None
 
     # Voice Settings
     DEFAULT_LANGUAGE: str = "hi-en"
@@ -46,12 +45,11 @@ class Settings(BaseSettings):
     SENTIMENT_NEGATIVE: float = -0.5
     SENTIMENT_CRITICAL: float = -0.7
 
-    # ✅ THIS IS THE CORRECT CONFIG FOR SETTINGS
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=True,
-        extra="allow"   # allow undeclared env vars
+        extra="allow"
     )
 
 
