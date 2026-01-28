@@ -303,6 +303,9 @@ class VoiceOrchestrator:
                 language=language if language != "hi-en" else "hi",
                 smart_format=True,
                 punctuate=True,
+                encoding="linear16",
+                sample_rate=16000,
+                channels=1,
             )
 
             response = await client.listen.asyncrest.v("1").transcribe_file(

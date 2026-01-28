@@ -298,6 +298,14 @@ async def twilio_media_stream_ws(websocket: WebSocket):
                 await orchestrator.end_session(session_id, reason="disconnect")
             except Exception:
                 pass
+    except RuntimeError as e:
+        # WebSocket closed unexpectedly (e.g., "WebSocket is not connected")
+        logger.info(f"Twilio WebSocket closed: session={session_id}, reason={e}")
+        if session_id:
+            try:
+                await orchestrator.end_session(session_id, reason="disconnect")
+            except Exception:
+                pass
     except Exception as e:
         logger.error(f"Twilio WebSocket error: {e}", exc_info=True)
         if session_id:
