@@ -142,6 +142,62 @@ class DeepgramSTT:
         logger.debug("Deepgram connection closed")
 
 
+class GoogleSTT:
+    """Google Cloud Speech-to-Text client with Hindi support."""
+
+    # Language code mapping
+    LANGUAGES = {
+        "hi": "hi-IN",
+        "hi-en": "hi-IN",  # Hinglish -> use Hindi
+        "en": "en-IN",
+    }
+
+    def __init__(self):
+        from google.cloud import speech_v1 as speech
+        self._speech = speech
+        self.client = speech.SpeechAsyncClient()
+
+    async def transcribe(
+        self,
+        audio_data: bytes,
+        language: str = "hi-en",
+        sample_rate: int = 16000,
+    ) -> Optional[TranscriptionResult]:
+        """Transcribe audio to text."""
+        speech = self._speech
+
+        lang_code = self.LANGUAGES.get(language, "hi-IN")
+
+        config = speech.RecognitionConfig(
+            encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+            sample_rate_hertz=sample_rate,
+            language_code=lang_code,
+            enable_automatic_punctuation=True,
+            model="latest_long",
+        )
+
+        audio = speech.RecognitionAudio(content=audio_data)
+
+        try:
+            response = await self.client.recognize(config=config, audio=audio)
+
+            if response.results:
+                result = response.results[0]
+                if result.alternatives:
+                    alt = result.alternatives[0]
+                    return TranscriptionResult(
+                        text=alt.transcript,
+                        confidence=alt.confidence,
+                        is_final=True,
+                        language=language,
+                        words=[],
+                    )
+            return None
+        except Exception as e:
+            logger.error(f"Google STT error: {e}")
+            return None
+
+
 class GoogleTTS:
     """Google Cloud Text-to-Speech client with Hindi support."""
 

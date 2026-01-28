@@ -12,6 +12,7 @@ from .deepgram_client import (
     DeepgramSTT,
     DeepgramTTS,
     DeepgramLanguageDetector,
+    GoogleSTT,
     TranscriptionResult,
     TTSResult
 )
@@ -30,8 +31,8 @@ RASA_URL = os.getenv("RASA_URL", "http://localhost:5005")
 # Deepgram operates at 16kHz, Twilio at 8kHz
 DEEPGRAM_SAMPLE_RATE = 16000
 
-# Buffer ~500ms of audio before sending to STT
-MIN_BUFFER_DURATION_MS = 500
+# Buffer ~1500ms of audio before sending to STT (allows capturing complete phrases)
+MIN_BUFFER_DURATION_MS = 1500
 CHUNK_DURATION_MS = 20  # Twilio sends ~20ms chunks
 
 
@@ -57,7 +58,7 @@ class VoiceSession:
 
 
 class VoiceOrchestrator:
-    """Orchestrates voice interaction between Deepgram and Rasa via Twilio."""
+    """Orchestrates voice interaction using Google STT/TTS and Rasa via Twilio."""
 
     def __init__(
         self,
@@ -68,7 +69,9 @@ class VoiceOrchestrator:
         self.deepgram_api_key = deepgram_api_key or os.getenv("DEEPGRAM_API_KEY")
         self.rasa_url = rasa_url or RASA_URL
 
+        # Use Google STT for Hindi/Hinglish (Deepgram kept for streaming if needed)
         self.stt = DeepgramSTT(self.deepgram_api_key)
+        self.google_stt = GoogleSTT()
         self.tts = DeepgramTTS(self.deepgram_api_key)
 
         self.sessions: Dict[str, VoiceSession] = {}
@@ -161,7 +164,10 @@ class VoiceOrchestrator:
         # Transcribe
         transcript = await self._transcribe_audio(audio_16k, session.language)
         if not transcript or not transcript.text.strip():
+            logger.debug(f"Empty transcript, skipping (buffer was {len(buffered)} bytes)")
             return None
+
+        logger.info(f"Processing transcript: '{transcript.text}'")
 
         # Language detection
         detected_lang = DeepgramLanguageDetector.detect_from_text(transcript.text)
@@ -293,36 +299,19 @@ class VoiceOrchestrator:
         audio_data: bytes,
         language: str
     ) -> Optional[TranscriptionResult]:
-        """Transcribe audio using Deepgram."""
+        """Transcribe audio using Google Cloud Speech-to-Text."""
         try:
-            from deepgram import PrerecordedOptions
-
-            client = self.stt.client
-            options = PrerecordedOptions(
-                model="nova-2",
-                language=language if language != "hi-en" else "hi",
-                smart_format=True,
-                punctuate=True,
-                encoding="linear16",
+            result = await self.google_stt.transcribe(
+                audio_data=audio_data,
+                language=language,
                 sample_rate=16000,
-                channels=1,
             )
 
-            response = await client.listen.asyncrest.v("1").transcribe_file(
-                {"buffer": audio_data},
-                options
-            )
-
-            results = response.results
-            if results and results.channels:
-                alt = results.channels[0].alternatives[0]
-                return TranscriptionResult(
-                    text=alt.transcript,
-                    confidence=alt.confidence,
-                    is_final=True,
-                    language=language,
-                    words=[]
-                )
+            if result:
+                logger.info(f"Google STT transcript: '{result.text}' (confidence: {result.confidence:.2f})")
+                return result
+            else:
+                logger.debug("Google STT returned no results")
         except Exception as e:
             logger.error(f"Transcription error: {e}")
 
