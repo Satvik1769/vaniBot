@@ -1,6 +1,7 @@
-"""Deepgram client for Speech-to-Text and Text-to-Speech."""
+"""Deepgram client for Speech-to-Text + Google Cloud TTS for Text-to-Speech."""
 import os
 import asyncio
+import io
 from typing import Optional, AsyncGenerator, Callable
 from dataclasses import dataclass
 import logging
@@ -141,22 +142,69 @@ class DeepgramSTT:
         logger.debug("Deepgram connection closed")
 
 
-class DeepgramTTS:
-    """Deepgram Text-to-Speech client."""
+class GoogleTTS:
+    """Google Cloud Text-to-Speech client with Hindi support."""
 
-    # Voice mappings for different languages
+    # Language -> (language_code, voice_name) mapping
     VOICES = {
-        "hi": "aura-asteria-hi",      # Hindi female voice
-        "hi-en": "aura-asteria-hi",    # Hinglish - use Hindi voice
-        "en": "aura-asteria-en",       # English female voice
+        "hi":    ("hi-IN", "hi-IN-Wavenet-A"),    # Hindi female
+        "hi-en": ("hi-IN", "hi-IN-Wavenet-A"),    # Hinglish -> use Hindi voice
+        "en":    ("en-IN", "en-IN-Wavenet-A"),     # English Indian accent female
+    }
+
+    def __init__(self):
+        from google.cloud import texttospeech_v1 as tts
+        self._tts = tts
+        self.client = tts.TextToSpeechAsyncClient()
+
+    async def synthesize(
+        self,
+        text: str,
+        language: str = "hi-en",
+    ) -> TTSResult:
+        """Synthesize text to 16kHz 16-bit linear PCM (WAV)."""
+        tts = self._tts
+
+        lang_code, voice_name = self.VOICES.get(language, self.VOICES["hi-en"])
+
+        request = tts.SynthesizeSpeechRequest(
+            input=tts.SynthesisInput(text=text),
+            voice=tts.VoiceSelectionParams(
+                language_code=lang_code,
+                name=voice_name,
+            ),
+            audio_config=tts.AudioConfig(
+                audio_encoding=tts.AudioEncoding.LINEAR16,
+                sample_rate_hertz=16000,
+            ),
+        )
+
+        try:
+            response = await self.client.synthesize_speech(request=request)
+            return TTSResult(
+                audio_data=response.audio_content,
+                content_type="audio/wav",
+            )
+        except Exception as e:
+            logger.error(f"Google TTS error: {e}")
+            raise
+
+
+# Keep DeepgramTTS as a fallback for English-only use cases
+class DeepgramTTS:
+    """Deepgram Text-to-Speech client (English/Spanish only)."""
+
+    VOICES = {
+        "en": "aura-asteria-en",
     }
 
     def __init__(self, api_key: str = None):
         self.api_key = api_key or DEEPGRAM_API_KEY
         if not self.api_key:
             raise ValueError("Deepgram API key is required")
-
         self.client = DeepgramClient(self.api_key)
+        # Google TTS for Hindi/Hinglish
+        self.google_tts = GoogleTTS()
 
     async def synthesize(
         self,
@@ -164,9 +212,16 @@ class DeepgramTTS:
         language: str = "hi-en",
         model: str = None
     ) -> TTSResult:
-        """Synthesize text to speech."""
-        # Select appropriate voice
-        voice = model or self.VOICES.get(language, self.VOICES["hi-en"])
+        """Synthesize text to speech.
+
+        Uses Google Cloud TTS for Hindi/Hinglish, Deepgram for English.
+        """
+        # Use Google TTS for Hindi and Hinglish
+        if language in ("hi", "hi-en"):
+            return await self.google_tts.synthesize(text, language)
+
+        # Use Deepgram for English
+        voice = model or self.VOICES.get(language, "aura-asteria-en")
 
         options = {
             "model": voice,
@@ -187,35 +242,7 @@ class DeepgramTTS:
             )
 
         except Exception as e:
-            logger.error(f"TTS synthesis error: {e}")
-            raise
-
-    async def synthesize_stream(
-        self,
-        text: str,
-        language: str = "hi-en"
-    ) -> AsyncGenerator[bytes, None]:
-        """Stream synthesized audio in chunks."""
-        voice = self.VOICES.get(language, self.VOICES["hi-en"])
-
-        options = {
-            "model": voice,
-            "encoding": "linear16",
-            "sample_rate": 16000,
-        }
-
-        try:
-            # Use streaming endpoint
-            response = await self.client.speak.asyncrest.v("1").stream_raw(
-                {"text": text},
-                options
-            )
-
-            async for chunk in response.iter_bytes():
-                yield chunk
-
-        except Exception as e:
-            logger.error(f"TTS streaming error: {e}")
+            logger.error(f"Deepgram TTS error: {e}")
             raise
 
 
