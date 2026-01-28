@@ -21,3 +21,39 @@ This template provides a foundation for building conversational agents with:
 └── config.yml       # Training pipeline configuration
 ```
 
+## Starting Project
+
+-  rasa train                                                                                                                                                                                               
+-   rasa run --enable-api --cors "*"                                                                                                                                                                         
+  This runs on port 5005 by default.   
+-  rasa run actions                                                                                                                                                                                         
+  This runs on port 5055 by default. 
+-  python -m uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload  
+- ngrok http 8000
+
+
+```
+  Quick Testing                                                                                                                                                                                            
+                                                                                                                                                                                                           
+  - Chat via CLI: rasa shell (for text-based testing)                                                                                                                                                      
+  - API endpoint: http://localhost:8000 (FastAPI docs at /docs)                                                                                                                                            
+  - Rasa API: http://localhost:5005   
+  
+```
+
+
+```
+
+  Summary of Ports                                                                                                                                                                                         
+  ┌─────────────────────┬──────┐                                                                                                                                                                           
+  │       Service       │ Port │                                                                                                                                                                           
+  ├─────────────────────┼──────┤                                                                                                                                                                           
+  │ Rasa Server         │ 5005 │                                                                                                                                                                           
+  ├─────────────────────┼──────┤                                                                                                                                                                           
+  │ Actions Server      │ 5055 │                                                                                                                                                                           
+  ├─────────────────────┼──────┤                                                                                                                                                                           
+  │ FastAPI (Voice/API) │ 8000 │                                                                                                                                                                           
+  └─────────────────────┴──────┘                                                                                                                                                                           
+                                 
+                                 
+       ```  
