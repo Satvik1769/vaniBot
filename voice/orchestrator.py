@@ -31,9 +31,12 @@ RASA_URL = os.getenv("RASA_URL", "http://localhost:5005")
 # Deepgram operates at 16kHz, Twilio at 8kHz
 DEEPGRAM_SAMPLE_RATE = 16000
 
-# Buffer ~1500ms of audio before sending to STT (allows capturing complete phrases)
-MIN_BUFFER_DURATION_MS = 1500
+# Buffer ~2000ms of audio before sending to STT (allows capturing complete phrases)
+MIN_BUFFER_DURATION_MS = 3000
 CHUNK_DURATION_MS = 20  # Twilio sends ~20ms chunks
+
+# Minimum confidence threshold - reject transcriptions below this
+MIN_CONFIDENCE_THRESHOLD = 0.4
 
 
 @dataclass
@@ -167,7 +170,12 @@ class VoiceOrchestrator:
             logger.debug(f"Empty transcript, skipping (buffer was {len(buffered)} bytes)")
             return None
 
-        logger.info(f"Processing transcript: '{transcript.text}'")
+        # Reject low-confidence transcriptions
+        if transcript.confidence < MIN_CONFIDENCE_THRESHOLD:
+            logger.info(f"Low confidence ({transcript.confidence:.2f}), ignoring: '{transcript.text}'")
+            return None
+
+        logger.info(f"Processing transcript: '{transcript.text}' (confidence: {transcript.confidence:.2f})")
 
         # Language detection
         detected_lang = DeepgramLanguageDetector.detect_from_text(transcript.text)
@@ -188,6 +196,7 @@ class VoiceOrchestrator:
                 "confidence": transcript.confidence,
             }
         )
+        logger.info(f"Rasa response: {rasa_response}")
 
         session.turn_count += 1
 
@@ -199,11 +208,16 @@ class VoiceOrchestrator:
 
         # Get response text and synthesize
         response_text = self._extract_response_text(rasa_response)
+        logger.info(f"Response text to synthesize: '{response_text}'")
+
         if response_text:
             if self.on_response:
                 await self.on_response(session_id, response_text)
-            return await self.synthesize_for_twilio(response_text, session.language)
+            audio = await self.synthesize_for_twilio(response_text, session.language)
+            logger.info(f"Synthesized audio size: {len(audio)} bytes")
+            return audio
 
+        logger.warning("No response text from Rasa")
         return None
 
     async def stream_audio(
@@ -361,10 +375,12 @@ class VoiceOrchestrator:
         return False
 
     def _extract_response_text(self, rasa_response: Dict[str, Any]) -> str:
-        """Extract response text from Rasa response."""
+        """Extract first response text from Rasa response (for voice, only use first)."""
         responses = rasa_response.get("responses", [])
-        texts = [r["text"] for r in responses if "text" in r]
-        return " ".join(texts)
+        for r in responses:
+            if "text" in r and r["text"].strip():
+                return r["text"]
+        return ""
 
     def get_session(self, session_id: str) -> Optional[VoiceSession]:
         """Get session by ID."""

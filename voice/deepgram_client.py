@@ -168,10 +168,16 @@ class GoogleSTT:
 
         lang_code = self.LANGUAGES.get(language, "hi-IN")
 
+        # For Hinglish, add English as alternative language for code-switching
+        alternative_languages = []
+        if language == "hi-en":
+            alternative_languages = ["en-IN"]
+
         config = speech.RecognitionConfig(
             encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
             sample_rate_hertz=sample_rate,
             language_code=lang_code,
+            alternative_language_codes=alternative_languages,
             enable_automatic_punctuation=True,
             model="latest_long",
         )
