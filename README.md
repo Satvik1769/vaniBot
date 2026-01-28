@@ -54,6 +54,4 @@ This template provides a foundation for building conversational agents with:
   ├─────────────────────┼──────┤                                                                                                                                                                           
   │ FastAPI (Voice/API) │ 8000 │                                                                                                                                                                           
   └─────────────────────┴──────┘                                                                                                                                                                           
-                                 
-                                 
-       ```  
+```
