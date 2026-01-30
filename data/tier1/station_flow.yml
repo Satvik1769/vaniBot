@@ -2,8 +2,11 @@ version: "3.1"
 
 flows:
   find_station:
-    description: Find nearest Battery Smart station
+
+    description: User wants to find nearest battery swap station or station location
     name: Station Finder Flow
+    nlu_trigger:
+      - intent: find_nearest_station
 
     steps:
       - id: "start"
@@ -44,8 +47,10 @@ flows:
         action: utter_anything_else
 
   check_availability:
-    description: Check battery availability at a station
+    description: User wants to check battery availability at a specific station
     name: Station Availability Flow
+    nlu_trigger:
+      - intent: check_station_availability
 
     steps:
       - id: "start"

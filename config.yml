@@ -19,10 +19,11 @@ pipeline:
   - name: NLUCommandAdapter
 
   - name: DIETClassifier
-    epochs: 100
+    epochs: 150
+    constrain_similarities: true
 
   - name: FallbackClassifier
-    threshold: 0.45
+    threshold: 0.15
     llm:
       model_group: openai-gpt-4o
 

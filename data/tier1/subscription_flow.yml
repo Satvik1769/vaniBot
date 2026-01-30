@@ -1,9 +1,11 @@
 version: "3.1"
 
 flows:
-  check_subscription:
-    description: Check subscription status and validity
+  check_subscription: 
+    description: User wants to check subscription status, validity, or remaining swaps
     name: Subscription Status Flow
+    nlu_trigger:
+      - intent: check_subscription
 
     steps:
       - id: "start"
@@ -39,8 +41,10 @@ flows:
         action: utter_anything_else
 
   renew_subscription:
-    description: Renew or purchase a new subscription
+    description: User wants to renew subscription or buy a new plan
     name: Subscription Renewal Flow
+    nlu_trigger:
+      - intent: renew_subscription
 
     steps:
       - id: "start"
@@ -81,8 +85,10 @@ flows:
         action: utter_anything_else
 
   explain_pricing:
-    description: Explain pricing and plans
+    description: User wants to know pricing, rates, or plan costs
     name: Pricing Explanation Flow
+    nlu_trigger:
+      - intent: explain_pricing
 
     steps:
       - id: "start"

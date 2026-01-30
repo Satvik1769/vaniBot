@@ -2,8 +2,10 @@ version: "3.1"
 
 flows:
   find_dsk:
-    description: Find nearest DSK for services
+    description: User wants to find nearest DSK, service center, or dealer
     name: DSK Finder Flow
+    nlu_trigger:
+      - intent: find_nearest_dsk
 
     steps:
       - id: "start"
@@ -47,8 +49,10 @@ flows:
         action: utter_anything_else
 
   apply_leave:
-    description: Apply for leave
+    description: User wants to apply for leave or take time off
     name: Leave Application Flow
+    nlu_trigger:
+      - intent: apply_leave
 
     steps:
       - id: "start"
@@ -99,8 +103,10 @@ flows:
         action: utter_anything_else
 
   check_leave_status:
-    description: Check leave status
+    description: User wants to check their leave status or pending leaves
     name: Leave Status Flow
+    nlu_trigger:
+      - intent: check_leave_status
 
     steps:
       - id: "start"

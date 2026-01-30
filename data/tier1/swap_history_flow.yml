@@ -2,8 +2,10 @@ version: "3.1"
 
 flows:
   swap_history:
-    description: Handle swap history lookup and invoice explanation
+    description: User wants to check their battery swap history, see past swaps, or view swap records
     name: Swap History Flow
+    nlu_trigger:
+      - intent: check_swap_history
 
     steps:
       - id: "start"
@@ -37,8 +39,10 @@ flows:
         action: utter_anything_else
 
   explain_invoice:
-    description: Explain a specific invoice or charge
+    description: User wants to understand an invoice, charge, or payment details
     name: Invoice Explanation Flow
+    nlu_trigger:
+      - intent: explain_invoice
 
     steps:
       - id: "start"

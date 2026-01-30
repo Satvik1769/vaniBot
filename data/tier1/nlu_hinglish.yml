@@ -26,6 +26,20 @@ nlu:
     - swap details chahiye
     - recent swaps dikhao
     - saare swaps dekhne hain
+    - swap history ke baare mein batao
+    - swap history ke baare mein jaanna hai
+    - mujhe swap history batao
+    - swap history kya hai
+    - swap history dikhao please
+    - kya aap mujhe swap history ke baare mein bata sakte hain
+    - kya aap mujhe swap history bata sakte hain
+    - aap mujhe swap history ke baare mein batao
+    - mujhe swap history ke baare mein bataiye
+    - swap history ke baare mein bata sakte hain
+    - swap history batao please
+    - meri swap history bataiye
+    - swap history check karna hai
+    - meri swap history batao
 
 - intent: explain_invoice
   examples: |
@@ -75,6 +89,12 @@ nlu:
     - swap karne kahan jaun
     - station ka address
     - [Rohini](location) station batao
+    - nearest station ke baare mein batao
+    - station ke baare mein jaanna hai
+    - what is the nearest station
+    - where is the nearest station
+    - nearest station batao
+    - station kahan hai
 
 - intent: check_station_availability
   examples: |
@@ -124,6 +144,11 @@ nlu:
     - subscription kab tak valid
     - expiry date kya hai
     - plan khatam hone wala hai kya
+    - subscription ke baare mein batao
+    - subscription ke baare mein jaanna hai
+    - mera subscription kya hai
+    - subscription status batao
+    - mujhe subscription ke baare mein batao
 
 - intent: renew_subscription
   examples: |
@@ -219,6 +244,20 @@ nlu:
     - account activate kahan
     - [support](service_type) ke liye DSK
     - help desk kahan hai
+    - dsk ke baare mein batao
+    - dsk ke baare mein bataaen
+    - dsk ke baare mein jaanna hai
+    - dsk kya hai
+    - dsk ki information
+    - dsk ki jankari do
+    - dsk ke baare mein bataiye
+    - mujhe dsk ke baare mein batao
+    - dsk details batao
+    - dsk info chahiye
+    - kya aap mujhe dsk ke baare mein bata sakte hain
+    - aap mujhe dsk ke baare mein batao
+    - dsk ke baare mein bata sakte hain
+    - dsk batao please
 
 - intent: check_leave_status
   examples: |
