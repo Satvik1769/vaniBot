@@ -16,14 +16,15 @@ pipeline:
   - name: RegexFeaturizer
   - name: LexicalSyntacticFeaturizer
   - name: CountVectorsFeaturizer
-  - name: NLUCommandAdapter
 
   - name: DIETClassifier
     epochs: 150
     constrain_similarities: true
 
+  - name: NLUCommandAdapter
+
   - name: FallbackClassifier
-    threshold: 0.15
+    threshold: 0.45
     llm:
       model_group: openai-gpt-4o
 

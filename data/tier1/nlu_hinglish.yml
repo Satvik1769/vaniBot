@@ -118,6 +118,16 @@ nlu:
     - swap ho payega kya
     - battery ka stock
     - real time availability
+    - battery stock kya hai abhi
+    - kitni charged battery hai station pe
+    - kya swap kar sakta hoon abhi
+    - station pe kitni battery padi hai
+    - battery milegi kya abhi
+    - [Rohini Station](station_name) pe stock
+    - swap slot available hai kya
+    - battery inventory check karo
+    - station full hai kya
+    - empty slots hain kya
 
 # ============================================
 # USE CASE 3: Subscription & Pricing
@@ -149,6 +159,16 @@ nlu:
     - mera subscription kya hai
     - subscription status batao
     - mujhe subscription ke baare mein batao
+    - mera plan active hai kya
+    - abhi kaunsa plan chal raha hai
+    - current plan kya hai mera
+    - subscription expire hua kya
+    - plan validity dekhni hai
+    - mere plan mein kitne swaps bache
+    - remaining validity batao
+    - plan end date kya hai
+    - subscription kab khatam hoga
+    - mera plan dekhao sirf
 
 - intent: renew_subscription
   examples: |
@@ -172,6 +192,19 @@ nlu:
     - resubscribe karna hai
     - subscription renew kar do
     - plan lena hai
+    - plan khareedna hai
+    - subscription kharidna chahta hoon
+    - naya plan lena chahiye
+    - plan dobara lena hai
+    - renew karwa do
+    - plan badhao
+    - subscription badhana hai
+    - phir se plan lo
+    - plan khareed lo mera
+    - subscription purchase karna hai
+    - plan upgrade karna chahta hoon
+    - better plan lena hai
+    - plan switch karna hai
 
 - intent: explain_pricing
   examples: |
@@ -195,6 +228,17 @@ nlu:
     - extra swap ka rate
     - all plans price
     - monthly kitne mein milta hai
+    - price list dikhao
+    - sab plans ki price kya hai
+    - rates batao saare plans ke
+    - kitne paise lagte hain
+    - cost breakdown batao
+    - per swap charge kya hai
+    - plans compare karo
+    - cheapest plan kaunsa hai
+    - ek swap ka kitna paisa lagta hai
+    - pricing structure samjhao
+    - tariff kya hai
 
 # ============================================
 # USE CASE 4: Leave & DSK
@@ -221,6 +265,17 @@ nlu:
     - holiday apply karo
     - leave daal do
     - off day chahiye
+    - nayi chutti lagani hai
+    - chutti ke liye apply karna hai
+    - mujhe chutti chahiye
+    - leave submit karo
+    - leave request daalo
+    - off maangna hai
+    - [parso](leave_date) chutti leni hai
+    - leave application submit karo
+    - mujhe [ek hafta](leave_duration) ki chutti chahiye
+    - sick leave lena hai
+    - emergency leave chahiye
 
 - intent: find_nearest_dsk
   examples: |
@@ -281,6 +336,16 @@ nlu:
     - leave balance
     - leave status check
     - meri leave application
+    - meri chutti ka kya hua
+    - leave approve hua kya nahi
+    - kya meri leave mili
+    - leave application ka status batao
+    - pending leave hai kya meri
+    - kitni leave bachi hai
+    - leave balance kitna hai
+    - meri chutti reject toh nahi hui
+    - leave request accepted hai kya
+    - manager ne approve kiya kya
 
 # ============================================
 # COMMON INTENTS
@@ -297,6 +362,26 @@ nlu:
     - kaise ho
     - kya haal hai
     - suno
+    - haan ji
+    - bolo
+    - haan bolo
+    - ji haan
+    - arey
+    - good afternoon
+    - shubh prabhat
+    - kem cho
+    - sat sri akal
+    - pranam
+    - hello ji
+    - hi there
+    - arre bhai
+    - suno ji
+    - haan ji boliye
+    - hello hello
+    - kya haal chaal
+    - sab theek
+    - namaste ji
+    - namaskar ji
 
 - intent: goodbye
   examples: |
@@ -312,6 +397,24 @@ nlu:
     - chalte hain
     - baad mein baat
     - tata
+    - bye bye
+    - phir milenge
+    - take care
+    - see you
+    - chalo bye
+    - thank you so much
+    - bahut shukriya
+    - bohot dhanyavaad
+    - fir baat karenge
+    - abhi ke liye bye
+    - mil ke achha laga
+    - thanks for help
+    - madad ke liye shukriya
+    - ok thanks bye
+    - theek hai thanks
+    - good night
+    - shubh ratri
+    - chalo theek hai
 
 - intent: affirm
   examples: |
@@ -329,6 +432,27 @@ nlu:
     - chalo
     - done
     - agreed
+    - haan bilkul
+    - zaroor
+    - pakka
+    - confirm
+    - yes yes
+    - haan haan
+    - ji haan
+    - sahi
+    - achha theek hai
+    - haan kar do
+    - proceed karo
+    - aage badho
+    - sure
+    - of course
+    - definitely
+    - haan chahiye
+    - ji zaroor
+    - karo karo
+    - haan bhai
+    - achha
+    - correct
 
 - intent: deny
   examples: |
@@ -344,6 +468,28 @@ nlu:
     - ruko
     - band karo
     - leave it
+    - nahi nahi
+    - bilkul nahi
+    - na na
+    - mat
+    - nope nope
+    - no no
+    - abhi nahi
+    - baad mein
+    - nahi abhi nahi
+    - rehne de
+    - chhodh do
+    - chhodo
+    - nahi karna
+    - nahi chahte
+    - cancel karo
+    - band kar do
+    - stop
+    - ruk jao
+    - nahi re
+    - nahin
+    - never mind
+    - koi zaroorat nahi
 
 - intent: request_human
   examples: |
@@ -362,6 +508,26 @@ nlu:
     - escalate karo
     - senior se baat
     - live agent
+    - customer support
+    - call center
+    - helpline number
+    - operator se baat
+    - asli insaan chahiye
+    - robot nahi chahiye
+    - machine se nahi baat karni
+    - kisi aadmi se baat karo
+    - representative chahiye
+    - supervisor se baat
+    - team leader se connect karo
+    - complaint register karna hai
+    - grievance hai
+    - issue report karna hai
+    - problem solve nahi ho rahi
+    - yeh bot kaam nahi kar raha
+    - manual help chahiye
+    - human assistance
+    - customer executive
+    - service representative
 
 - intent: out_of_scope
   examples: |
@@ -375,6 +541,36 @@ nlu:
     - gaana sunao
     - news batao
     - cricket score
+    - flight book karo
+    - hotel booking
+    - restaurant suggest karo
+    - shopping karna hai
+    - game khelein
+    - poem sunao
+    - story batao
+    - aaj ka mausam
+    - stock market
+    - bitcoin price
+    - lottery result
+    - exam result
+    - bus timing
+    - metro timing batao
+    - zomato order
+    - swiggy se mangao
+    - uber book karo
+    - ola call karo
+    - song play karo
+    - video dikhao
+    - photo edit karo
+    - document print karo
+    - email bhejo
+    - message karo
+    - call lagao
+    - alarm set karo
+    - reminder set karo
+    - calculator kholo
+    - google search karo
+    - youtube kholo
 
 # ============================================
 # ENTITIES SYNONYMS
