@@ -143,7 +143,7 @@ class DeepgramSTT:
 
 
 class GoogleSTT:
-    """Google Cloud Speech-to-Text client with Hindi support."""
+    """Google Cloud Speech-to-Text client with Hindi support and domain biasing."""
 
     # Language code mapping
     LANGUAGES = {
@@ -152,10 +152,62 @@ class GoogleSTT:
         "en": "en-IN",
     }
 
+    # Domain-specific vocabulary for speech adaptation
+    # These terms get boosted during recognition
+    DOMAIN_PHRASES = [
+        # Core business terms
+        "Battery Smart",
+        "battery swap",
+        "swap station",
+        "charging station",
+        "subscription",
+        "monthly plan",
+        "nearest station",
+
+        # Hindi terms (Romanized)
+        "kahan hai",
+        "batao",
+        "dikhao",
+        "chahiye",
+        "kitna",
+        "kitni",
+        "namaste",
+        "dhanyawad",
+
+        # Location terms
+        "Delhi",
+        "Mumbai",
+        "Bangalore",
+        "Hyderabad",
+        "Pune",
+        "Gurgaon",
+        "Noida",
+
+        # Action phrases
+        "find station",
+        "book swap",
+        "check balance",
+        "station dikha do",
+        "nearest swap kahan hai",
+        "battery kaise swap kare",
+    ]
+
     def __init__(self):
         from google.cloud import speech_v1 as speech
         self._speech = speech
         self.client = speech.SpeechAsyncClient()
+        self._speech_context = self._build_speech_context()
+
+    def _build_speech_context(self):
+        """Build speech adaptation context with boosted phrases."""
+        speech = self._speech
+
+        # Create speech context with domain phrases
+        # Boost value: 1-20, higher = more likely to recognize
+        return speech.SpeechContext(
+            phrases=self.DOMAIN_PHRASES,
+            boost=15.0  # Strong boost for domain terms
+        )
 
     async def transcribe(
         self,
@@ -163,7 +215,7 @@ class GoogleSTT:
         language: str = "hi-en",
         sample_rate: int = 16000,
     ) -> Optional[TranscriptionResult]:
-        """Transcribe audio to text."""
+        """Transcribe audio to text with domain biasing."""
         speech = self._speech
 
         lang_code = self.LANGUAGES.get(language, "hi-IN")
@@ -173,6 +225,7 @@ class GoogleSTT:
         if language == "hi-en":
             alternative_languages = ["en-IN"]
 
+        # Build recognition config with speech adaptation
         config = speech.RecognitionConfig(
             encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
             sample_rate_hertz=sample_rate,
@@ -180,6 +233,14 @@ class GoogleSTT:
             alternative_language_codes=alternative_languages,
             enable_automatic_punctuation=True,
             model="latest_long",
+            # Enable word-level confidence
+            enable_word_confidence=True,
+            # Enable spoken punctuation for natural speech
+            enable_spoken_punctuation=False,
+            # Add domain-specific speech context
+            speech_contexts=[self._speech_context],
+            # Use enhanced model for telephony if available
+            use_enhanced=True,
         )
 
         audio = speech.RecognitionAudio(content=audio_data)
@@ -191,17 +252,33 @@ class GoogleSTT:
                 result = response.results[0]
                 if result.alternatives:
                     alt = result.alternatives[0]
+
+                    # Extract word-level info if available
+                    words = []
+                    if hasattr(alt, 'words') and alt.words:
+                        words = [{
+                            "word": w.word,
+                            "confidence": w.confidence,
+                            "start": w.start_time.total_seconds() if hasattr(w, 'start_time') else 0,
+                            "end": w.end_time.total_seconds() if hasattr(w, 'end_time') else 0,
+                        } for w in alt.words]
+
                     return TranscriptionResult(
                         text=alt.transcript,
                         confidence=alt.confidence,
                         is_final=True,
                         language=language,
-                        words=[],
+                        words=words,
                     )
             return None
         except Exception as e:
             logger.error(f"Google STT error: {e}")
             return None
+
+    def add_domain_phrases(self, phrases: list[str]):
+        """Add additional domain phrases for recognition boost."""
+        self.DOMAIN_PHRASES.extend(phrases)
+        self._speech_context = self._build_speech_context()
 
 
 class GoogleTTS:

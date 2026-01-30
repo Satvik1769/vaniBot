@@ -2,7 +2,7 @@
 import os
 import asyncio
 import uuid
-from typing import Optional, Dict, Any, Callable
+from typing import Optional, Dict, Any, Callable, TYPE_CHECKING
 from dataclasses import dataclass, field
 from datetime import datetime
 import logging
@@ -21,8 +21,12 @@ from .twilio_handler import (
     strip_wav_header,
     resample_8k_to_16k,
     resample_16k_to_8k,
+    preprocess_audio_for_stt,
+    VADState,
+    calculate_rms,
     TWILIO_SAMPLE_RATE,
 )
+from .text_correction import CorrectionPipeline
 
 logger = logging.getLogger(__name__)
 
@@ -31,12 +35,18 @@ RASA_URL = os.getenv("RASA_URL", "http://localhost:5005")
 # Deepgram operates at 16kHz, Twilio at 8kHz
 DEEPGRAM_SAMPLE_RATE = 16000
 
-# Buffer ~2000ms of audio before sending to STT (allows capturing complete phrases)
-MIN_BUFFER_DURATION_MS = 3000
+# VAD-based audio processing
 CHUNK_DURATION_MS = 20  # Twilio sends ~20ms chunks
 
 # Minimum confidence threshold - reject transcriptions below this
 MIN_CONFIDENCE_THRESHOLD = 0.4
+
+# VAD Configuration
+VAD_SPEECH_THRESHOLD_DB = -30.0   # dB level to detect speech
+VAD_SILENCE_THRESHOLD_DB = -40.0  # dB level for silence
+VAD_SPEECH_MIN_MS = 200           # Min speech before valid utterance
+VAD_SILENCE_TRIGGER_MS = 600      # Silence to trigger transcription
+VAD_MAX_SPEECH_MS = 8000          # Max speech before forced cut
 
 
 @dataclass
@@ -58,6 +68,9 @@ class VoiceSession:
     call_sid: Optional[str] = None
     audio_buffer: bytes = b""
     buffer_duration_ms: int = 0
+    # VAD state (initialized separately)
+    vad: Optional[Any] = None
+    noise_samples: list = field(default_factory=list)
 
 
 class VoiceOrchestrator:
@@ -76,6 +89,9 @@ class VoiceOrchestrator:
         self.stt = DeepgramSTT(self.deepgram_api_key)
         self.google_stt = GoogleSTT()
         self.tts = DeepgramTTS(self.deepgram_api_key)
+
+        # Text correction pipeline with transliteration (Devanagari -> Roman)
+        self.text_corrector = CorrectionPipeline(use_llm=False, use_transliteration=True)
 
         self.sessions: Dict[str, VoiceSession] = {}
         self.on_audio_output = on_audio_output
@@ -96,11 +112,21 @@ class VoiceOrchestrator:
         """Start a new voice session."""
         session_id = session_id or f"voice-{phone_number}-{uuid.uuid4().hex[:8]}"
 
+        # Create VAD state for this session
+        vad = VADState(
+            speech_threshold_db=VAD_SPEECH_THRESHOLD_DB,
+            silence_threshold_db=VAD_SILENCE_THRESHOLD_DB,
+            speech_min_ms=VAD_SPEECH_MIN_MS,
+            silence_trigger_ms=VAD_SILENCE_TRIGGER_MS,
+            max_speech_ms=VAD_MAX_SPEECH_MS,
+        )
+
         session = VoiceSession(
             session_id=session_id,
             phone_number=phone_number,
             stream_sid=stream_sid,
             call_sid=call_sid,
+            vad=vad,
         )
         self.sessions[session_id] = session
 
@@ -138,9 +164,11 @@ class VoiceOrchestrator:
     ) -> Optional[bytes]:
         """Process incoming 8kHz PCM audio and return 8kHz PCM response.
 
-        The caller (TwilioHandler) decodes mulaw -> PCM before calling this.
-        This buffers audio, transcribes via Deepgram, sends to Rasa,
-        synthesizes the response, and returns 8kHz PCM.
+        Uses VAD (Voice Activity Detection) to intelligently segment speech:
+        1. Buffers audio only when speech is detected
+        2. Triggers transcription after speech + silence pause
+        3. Preprocesses audio for optimal STT quality
+        4. Applies text correction after STT
         """
         session = self.sessions.get(session_id)
         if not session or not session.is_active:
@@ -149,33 +177,78 @@ class VoiceOrchestrator:
 
         session.last_activity = datetime.now()
 
-        # Accumulate audio
-        session.audio_buffer += pcm_audio_8k
-        session.buffer_duration_ms += CHUNK_DURATION_MS
+        # Use VAD to determine speech/silence state
+        vad = session.vad
+        if vad is None:
+            # Fallback: create VAD if missing
+            vad = VADState()
+            session.vad = vad
 
-        if session.buffer_duration_ms < MIN_BUFFER_DURATION_MS:
-            return None  # Keep buffering
+        is_speech, should_finalize = vad.process_chunk(pcm_audio_8k, CHUNK_DURATION_MS)
+
+        # Buffer audio during speech (and short silence gaps)
+        if is_speech or (vad.is_speaking and vad.silence_start_ms < VAD_SILENCE_TRIGGER_MS):
+            session.audio_buffer += pcm_audio_8k
+            session.buffer_duration_ms += CHUNK_DURATION_MS
+
+        # Check if we should process the buffer
+        if not should_finalize:
+            return None  # Keep waiting
 
         # Grab buffer and reset
         buffered = session.audio_buffer
         session.audio_buffer = b""
         session.buffer_duration_ms = 0
 
-        # Upsample 8kHz -> 16kHz for Deepgram
-        audio_16k = resample_8k_to_16k(buffered)
+        # Skip if buffer too small
+        if len(buffered) < 1600:  # Less than 100ms
+            logger.debug("Buffer too small, skipping")
+            return None
 
-        # Transcribe
+        logger.info(f"VAD triggered: processing {len(buffered)} bytes ({session.buffer_duration_ms}ms of speech)")
+
+        # ══════════════════════════════════════════════════════════════
+        # AUDIO PREPROCESSING PIPELINE
+        # ══════════════════════════════════════════════════════════════
+
+        # Step 1: Preprocess at 8kHz (bandpass, denoise, normalize)
+        processed_8k = preprocess_audio_for_stt(
+            buffered,
+            sample_rate=8000,
+            noise_floor=vad.noise_floor
+        )
+
+        # Step 2: Upsample to 16kHz for STT
+        audio_16k = resample_8k_to_16k(processed_8k)
+
+        # ══════════════════════════════════════════════════════════════
+        # SPEECH-TO-TEXT
+        # ══════════════════════════════════════════════════════════════
+
         transcript = await self._transcribe_audio(audio_16k, session.language)
         if not transcript or not transcript.text.strip():
-            logger.debug(f"Empty transcript, skipping (buffer was {len(buffered)} bytes)")
+            logger.debug(f"Empty transcript, skipping")
             return None
+
+        # ══════════════════════════════════════════════════════════════
+        # TEXT CORRECTION LAYER (includes transliteration)
+        # ══════════════════════════════════════════════════════════════
+
+        original_text = transcript.text
+        correction_result = await self.text_corrector.correct(original_text)
+
+        if correction_result.corrections_made:
+            logger.info(f"Text corrections: {correction_result.corrections_made}")
+            transcript.text = correction_result.corrected
+            # Boost confidence slightly after successful corrections
+            transcript.confidence = min(1.0, transcript.confidence + correction_result.confidence_boost)
 
         # Reject low-confidence transcriptions
         if transcript.confidence < MIN_CONFIDENCE_THRESHOLD:
             logger.info(f"Low confidence ({transcript.confidence:.2f}), ignoring: '{transcript.text}'")
             return None
 
-        logger.info(f"Processing transcript: '{transcript.text}' (confidence: {transcript.confidence:.2f})")
+        logger.info(f"Final transcript: '{transcript.text}' (confidence: {transcript.confidence:.2f})")
 
         # Language detection
         detected_lang = DeepgramLanguageDetector.detect_from_text(transcript.text)

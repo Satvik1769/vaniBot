@@ -22,6 +22,15 @@ pydantic-settings==2.1.0
 # Voice - Deepgram
 deepgram-sdk==3.7.0
 
+# Voice - Google Cloud Speech-to-Text & Text-to-Speech
+google-cloud-speech>=2.20.0
+google-cloud-texttospeech>=2.14.0
+google-cloud-translate>=3.11.0
+
+# Audio Processing (DSP for preprocessing, VAD)
+numpy>=1.24.0
+scipy>=1.11.0
+
 # LLM - Google Gemini
 google-generativeai==0.3.2
 
