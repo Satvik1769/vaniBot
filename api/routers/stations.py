@@ -289,6 +289,18 @@ async def send_station_directions_sms(
 ):
     """Send station directions to user via SMS."""
     from ..services.sms_service import send_station_directions_sms as send_sms_func
+    from sqlalchemy import text
+
+    # Get user_id from drivers table
+    user_id = None
+    try:
+        query = text("SELECT id FROM drivers WHERE phone_number = :phone")
+        result = await db.execute(query, {"phone": phone_number})
+        row = result.fetchone()
+        if row:
+            user_id = str(row[0])
+    except Exception as e:
+        logging.error(f"Error getting driver id: {e}")
 
     result = await send_sms_func(
         db=db,
@@ -296,7 +308,8 @@ async def send_station_directions_sms(
         station_name=station_name,
         station_address=station_address,
         available_batteries=available_batteries,
-        google_maps_url=google_maps_url
+        google_maps_url=google_maps_url,
+        user_id=user_id
     )
 
     return {
