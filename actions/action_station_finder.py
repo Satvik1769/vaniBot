@@ -10,7 +10,7 @@ API_BASE_URL = "http://localhost:8000/api/v1"
 
 
 class ActionFindNearestStations(Action):
-    """Find nearest stations based on user location."""
+    """Find nearest stations based on user location or phone number."""
 
     def name(self) -> Text:
         return "action_find_nearest_stations"
@@ -24,10 +24,11 @@ class ActionFindNearestStations(Action):
         location = tracker.get_slot("user_location")
         latitude = tracker.get_slot("user_latitude")
         longitude = tracker.get_slot("user_longitude")
+        phone_number = tracker.get_slot("driver_phone")
 
         try:
             async with httpx.AsyncClient() as client:
-                # If we have coordinates, use them
+                # Priority 1: Use coordinates if available
                 if latitude and longitude:
                     response = await client.get(
                         f"{API_BASE_URL}/stations/nearest",
@@ -37,7 +38,13 @@ class ActionFindNearestStations(Action):
                             "limit": 5
                         }
                     )
-                # Otherwise search by city/area name
+                # Priority 2: Use phone number for geolocation lookup
+                elif phone_number:
+                    response = await client.get(
+                        f"{API_BASE_URL}/stations/nearest-by-phone/{phone_number}",
+                        params={"limit": 5, "min_batteries": 1}
+                    )
+                # Priority 3: Search by location name
                 elif location:
                     response = await client.get(
                         f"{API_BASE_URL}/stations/search",
@@ -52,11 +59,11 @@ class ActionFindNearestStations(Action):
                 if response.status_code == 200:
                     data = response.json()
                     stations = data.get("stations", [])
+                    user_location = data.get("user_location", {})
 
                     if not stations:
-                        dispatcher.utter_message(
-                            text=f"{location} ke paas koi station nahi mila. Kripya koi aur area try karein."
-                        )
+                        msg = f"{location or 'Aapke area'} ke paas koi station nahi mila. Kripya koi aur area try karein."
+                        dispatcher.utter_message(text=msg)
                         return []
 
                     # Format station list
@@ -72,12 +79,22 @@ class ActionFindNearestStations(Action):
                             station_list_text += f"{i}. {name} - {available} batteries available\n"
 
                     nearest = stations[0]
+
+                    # Include Google Maps URL for first station
+                    maps_url = nearest.get("google_map_url", "")
+                    if maps_url:
+                        station_list_text += f"\nDirections: {maps_url}"
+
                     return [
                         SlotSet("nearest_stations", stations),
                         SlotSet("station_list", station_list_text),
                         SlotSet("station_count", len(stations)),
                         SlotSet("nearest_station_name", nearest.get("name")),
-                        SlotSet("available_batteries", nearest.get("available_batteries", 0))
+                        SlotSet("nearest_station_address", nearest.get("address")),
+                        SlotSet("available_batteries", nearest.get("available_batteries", 0)),
+                        SlotSet("google_maps_url", maps_url),
+                        SlotSet("user_latitude", user_location.get("latitude")),
+                        SlotSet("user_longitude", user_location.get("longitude"))
                     ]
                 else:
                     dispatcher.utter_message(

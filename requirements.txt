@@ -34,8 +34,11 @@ scipy>=1.11.0
 # LLM - Google Gemini
 google-generativeai==0.3.2
 
-# Twilio (uses httpx for REST API calls, websockets for Media Streams)
-# No separate twilio SDK needed — we use httpx + raw WebSocket
+# Twilio (for SMS and Voice)
+twilio==8.10.0
+
+# Razorpay Payment Gateway
+razorpay==1.4.1
 
 # OpenAI (for embeddings and fallback)
 openai==1.99.9

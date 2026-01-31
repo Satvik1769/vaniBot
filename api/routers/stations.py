@@ -1,5 +1,5 @@
 """Station and availability endpoints."""
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
 from decimal import Decimal
@@ -15,6 +15,7 @@ from ..models.station import (
     StationAvailabilityResponse
 )
 from ..services import station_service
+from ..services.geolocation_service import get_user_location, get_nearest_stations as geo_nearest
 
 router = APIRouter(prefix="/stations", tags=["Stations"])
 
@@ -184,4 +185,89 @@ async def check_availability_simple(
         "status": result["status"],
         "status_message": result["status_message"],
         "status_message_hi": result["status_message_hi"]
+    }
+
+
+@router.get("/nearest-by-phone/{phone_number}")
+async def find_nearest_by_phone(
+    phone_number: str,
+    request: Request,
+    limit: int = Query(default=5, ge=1, le=10),
+    min_batteries: int = Query(default=0, ge=0),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Find nearest stations for a user by their phone number.
+
+    Uses IP geolocation or registered city to determine location.
+    Optionally filter by minimum available batteries.
+    """
+    # Get client IP for geolocation
+    client_ip = request.client.host if request.client else None
+
+    # Get user location
+    location = await get_user_location(
+        db=db,
+        phone_number=phone_number,
+        ip_address=client_ip
+    )
+
+    # Find nearest stations
+    stations = await geo_nearest(
+        db=db,
+        latitude=location["latitude"],
+        longitude=location["longitude"],
+        limit=limit,
+        min_available_batteries=min_batteries
+    )
+
+    return {
+        "phone_number": phone_number,
+        "user_location": location,
+        "stations": stations,
+        "total_found": len(stations),
+        "message": f"Found {len(stations)} stations near you." if stations else "No stations found nearby.",
+        "message_hi": f"Aapke paas {len(stations)} stations mile." if stations else "Aapke paas koi station nahi mila."
+    }
+
+
+@router.get("/dsk/nearest-by-phone/{phone_number}")
+async def find_nearest_dsk_by_phone(
+    phone_number: str,
+    request: Request,
+    limit: int = Query(default=3, ge=1, le=5),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Find nearest DSK (Dealer Service Kiosk) for a user by their phone number.
+
+    Uses IP geolocation or registered city to determine location.
+    """
+    from ..services.geolocation_service import get_nearest_dsk as geo_dsk
+
+    # Get client IP for geolocation
+    client_ip = request.client.host if request.client else None
+
+    # Get user location
+    location = await get_user_location(
+        db=db,
+        phone_number=phone_number,
+        ip_address=client_ip
+    )
+
+    # Find nearest DSK
+    dsk_list = await geo_dsk(
+        db=db,
+        latitude=location["latitude"],
+        longitude=location["longitude"],
+        limit=limit
+    )
+
+    return {
+        "phone_number": phone_number,
+        "user_location": location,
+        "dsk_locations": dsk_list,
+        "total_found": len(dsk_list),
+        "message": f"Found {len(dsk_list)} DSK locations near you." if dsk_list else "No DSK found nearby.",
+        "message_hi": f"Aapke paas {len(dsk_list)} DSK mile." if dsk_list else "Aapke paas koi DSK nahi mila."
     }

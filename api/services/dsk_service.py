@@ -2,8 +2,117 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from typing import List, Optional
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
+
+# Leave balance constants
+MAX_LEAVES_PER_MONTH = 4
+
+
+async def get_leave_balance(db: AsyncSession, phone_number: str) -> dict:
+    """Get current month's leave balance for driver."""
+    current_month = datetime.now().strftime("%Y-%m")
+
+    # Get driver
+    driver_query = text("SELECT id, name FROM drivers WHERE phone_number = :phone")
+    driver_result = await db.execute(driver_query, {"phone": phone_number})
+    driver_row = driver_result.fetchone()
+
+    if not driver_row:
+        return {
+            "found": False,
+            "message": "Driver not found.",
+            "message_hi": "Driver nahi mila."
+        }
+
+    driver_id = driver_row[0]
+    driver_name = driver_row[1]
+
+    # Get or create leave balance for current month
+    balance_query = text("""
+        SELECT id, total_leaves, used_leaves, remaining_leaves
+        FROM leave_balance
+        WHERE driver_id = :driver_id AND month_year = :month_year
+    """)
+    balance_result = await db.execute(balance_query, {
+        "driver_id": driver_id,
+        "month_year": current_month
+    })
+    balance_row = balance_result.fetchone()
+
+    if balance_row:
+        data = dict(balance_row._mapping)
+    else:
+        # Create new leave balance for this month
+        create_query = text("""
+            INSERT INTO leave_balance (driver_id, month_year, total_leaves, used_leaves)
+            VALUES (:driver_id, :month_year, :total_leaves, 0)
+            RETURNING id, total_leaves, used_leaves
+        """)
+        create_result = await db.execute(create_query, {
+            "driver_id": driver_id,
+            "month_year": current_month,
+            "total_leaves": MAX_LEAVES_PER_MONTH
+        })
+        await db.commit()
+        create_row = create_result.fetchone()
+        data = dict(create_row._mapping)
+        data["remaining_leaves"] = MAX_LEAVES_PER_MONTH
+
+    remaining = data.get("remaining_leaves", MAX_LEAVES_PER_MONTH - data.get("used_leaves", 0))
+
+    return {
+        "found": True,
+        "driver_id": str(driver_id),
+        "driver_name": driver_name,
+        "month": current_month,
+        "total_leaves": data.get("total_leaves", MAX_LEAVES_PER_MONTH),
+        "used_leaves": data.get("used_leaves", 0),
+        "remaining_leaves": remaining,
+        "message": f"You have {remaining} leaves remaining this month out of {MAX_LEAVES_PER_MONTH}.",
+        "message_hi": f"Is mahine aapke paas {MAX_LEAVES_PER_MONTH} mein se {remaining} leaves bachi hain."
+    }
+
+
+async def use_leave(db: AsyncSession, phone_number: str, days: int = 1) -> dict:
+    """Use leave from balance when applying leave."""
+    balance = await get_leave_balance(db, phone_number)
+
+    if not balance.get("found"):
+        return balance
+
+    if balance["remaining_leaves"] < days:
+        return {
+            "success": False,
+            "remaining_leaves": balance["remaining_leaves"],
+            "message": f"Not enough leaves. You have {balance['remaining_leaves']} remaining, but need {days}.",
+            "message_hi": f"Aapke paas {balance['remaining_leaves']} leaves hain, lekin {days} chahiye."
+        }
+
+    current_month = datetime.now().strftime("%Y-%m")
+
+    # Update leave balance
+    update_query = text("""
+        UPDATE leave_balance
+        SET used_leaves = used_leaves + :days, updated_at = NOW()
+        WHERE driver_id = :driver_id AND month_year = :month_year
+        RETURNING used_leaves
+    """)
+    await db.execute(update_query, {
+        "driver_id": balance["driver_id"],
+        "month_year": current_month,
+        "days": days
+    })
+    await db.commit()
+
+    new_remaining = balance["remaining_leaves"] - days
+    return {
+        "success": True,
+        "used": days,
+        "remaining_leaves": new_remaining,
+        "message": f"Used {days} leave(s). {new_remaining} remaining this month.",
+        "message_hi": f"{days} leave use ki. Is mahine {new_remaining} bachi hain."
+    }
 
 
 async def get_nearest_dsk(

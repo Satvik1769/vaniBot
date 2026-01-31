@@ -134,7 +134,7 @@ class ActionShowPricing(Action):
 
 
 class ActionProcessRenewal(Action):
-    """Process subscription renewal."""
+    """Process subscription renewal with Juspay payment."""
 
     def name(self) -> Text:
         return "action_process_renewal"
@@ -177,13 +177,15 @@ class ActionProcessRenewal(Action):
 
         try:
             async with httpx.AsyncClient() as client:
+                # Use the new initiate-renewal endpoint that creates payment link
                 response = await client.post(
-                    f"{API_BASE_URL}/subscriptions/renew",
+                    f"{API_BASE_URL}/subscriptions/initiate-renewal",
                     json={
                         "phone_number": phone_number,
                         "plan_code": plan_code,
                         "auto_renew": False
-                    }
+                    },
+                    timeout=30.0
                 )
 
                 if response.status_code == 200:
@@ -192,11 +194,14 @@ class ActionProcessRenewal(Action):
                     return [
                         SlotSet("plan_name", data.get("plan_name")),
                         SlotSet("plan_price", data.get("price")),
-                        SlotSet("tax_amount", data.get("tax")),
-                        SlotSet("total_amount", data.get("total")),
+                        SlotSet("gst_amount", data.get("gst_amount")),
+                        SlotSet("total_amount", data.get("total_amount")),
                         SlotSet("validity_days", data.get("validity_days")),
-                        SlotSet("start_date", str(data.get("start_date"))),
-                        SlotSet("end_date", str(data.get("end_date")))
+                        SlotSet("swaps_included", data.get("swaps_included")),
+                        SlotSet("payment_link", data.get("payment_link")),
+                        SlotSet("order_id", data.get("order_id")),
+                        SlotSet("sms_sent", data.get("sms_sent", False)),
+                        SlotSet("renewal_message", data.get("message_hi", data.get("message")))
                     ]
                 elif response.status_code == 404:
                     dispatcher.utter_message(
@@ -204,13 +209,87 @@ class ActionProcessRenewal(Action):
                     )
                     return []
                 elif response.status_code == 400:
+                    error_detail = response.json().get("detail", "")
                     dispatcher.utter_message(
-                        text="Invalid plan. Kripya Daily, Weekly, Monthly ya Yearly mein se choose karein."
+                        text=f"Error: {error_detail}. Kripya Daily, Weekly, Monthly ya Yearly mein se choose karein."
                     )
                     return []
                 else:
                     dispatcher.utter_message(
                         text="Subscription renew karne mein problem hui."
+                    )
+                    return []
+
+        except Exception as e:
+            dispatcher.utter_message(
+                text="Technical issue hui hai. Kripya thodi der baad try karein."
+            )
+            return []
+
+
+class ActionCheckSubscriptionWithPenalty(Action):
+    """Check subscription status including any penalties."""
+
+    def name(self) -> Text:
+        return "action_check_subscription_with_penalty"
+
+    async def run(
+        self,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: DomainDict
+    ) -> List[Dict[Text, Any]]:
+        phone_number = tracker.get_slot("driver_phone")
+
+        if not phone_number:
+            dispatcher.utter_message(
+                text="Maaf kijiye, aapka phone number nahi mila."
+            )
+            return []
+
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f"{API_BASE_URL}/subscriptions/status-with-penalty/{phone_number}"
+                )
+
+                if response.status_code == 200:
+                    data = response.json()
+                    subscription = data.get("subscription")
+                    has_penalty = data.get("has_penalty", False)
+                    penalty = data.get("penalty", {})
+
+                    events = [
+                        SlotSet("subscription_status", subscription),
+                        SlotSet("subscription_message", data.get("message_hi", data.get("message"))),
+                        SlotSet("has_penalty", has_penalty)
+                    ]
+
+                    if subscription:
+                        events.extend([
+                            SlotSet("plan_name", subscription.get("plan_name_hi") or subscription.get("plan_name")),
+                            SlotSet("plan_status", subscription.get("status")),
+                            SlotSet("end_date", str(subscription.get("end_date"))),
+                            SlotSet("days_remaining", subscription.get("days_remaining")),
+                            SlotSet("subscription_expiring_soon", subscription.get("is_expiring_soon", False))
+                        ])
+
+                    if has_penalty:
+                        events.extend([
+                            SlotSet("penalty_amount", penalty.get("penalty_amount", 0)),
+                            SlotSet("days_overdue", penalty.get("days_overdue", 0)),
+                            SlotSet("penalty_message", penalty.get("message_hi", penalty.get("message")))
+                        ])
+
+                    return events
+                elif response.status_code == 404:
+                    dispatcher.utter_message(
+                        text="Aapka account nahi mila. Kripya pehle registration karein."
+                    )
+                    return []
+                else:
+                    dispatcher.utter_message(
+                        text="Subscription status check karne mein problem hui."
                     )
                     return []
 

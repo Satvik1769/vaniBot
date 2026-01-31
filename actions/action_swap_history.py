@@ -71,6 +71,65 @@ class ActionFetchSwapHistory(Action):
             return []
 
 
+class ActionFetchSwapHistoryWithSMS(Action):
+    """Fetch swap history and send it via SMS."""
+
+    def name(self) -> Text:
+        return "action_fetch_swap_history_sms"
+
+    async def run(
+        self,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: DomainDict
+    ) -> List[Dict[Text, Any]]:
+        phone_number = tracker.get_slot("driver_phone")
+        time_period = tracker.get_slot("time_period") or "today"
+
+        if not phone_number:
+            dispatcher.utter_message(
+                text="Maaf kijiye, aapka phone number nahi mila."
+            )
+            return []
+
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{API_BASE_URL}/swaps/history/send-sms/{phone_number}",
+                    params={"time_period": time_period}
+                )
+
+                if response.status_code == 200:
+                    data = response.json()
+                    sms_sent = data.get("sms_sent", False)
+
+                    if sms_sent:
+                        return [
+                            SlotSet("swap_history", data.get("swap_history", {}).get("swaps", [])),
+                            SlotSet("sms_sent", True),
+                            SlotSet("swap_history_message",
+                                    f"Aapki swap history {phone_number} pe SMS kar di hai.")
+                        ]
+                    else:
+                        return [
+                            SlotSet("swap_history", data.get("swap_history", {}).get("swaps", [])),
+                            SlotSet("sms_sent", False),
+                            SlotSet("swap_history_message",
+                                    data.get("swap_history", {}).get("message_hi", "Swap history mil gayi."))
+                        ]
+                else:
+                    dispatcher.utter_message(
+                        text="Swap history fetch karne mein problem hui."
+                    )
+                    return []
+
+        except Exception as e:
+            dispatcher.utter_message(
+                text="Technical issue hui hai. Kripya thodi der baad try karein."
+            )
+            return []
+
+
 class ActionExplainInvoice(Action):
     """Explain invoice details to the driver."""
 
@@ -94,28 +153,39 @@ class ActionExplainInvoice(Action):
 
         try:
             async with httpx.AsyncClient() as client:
-                params = {"phone_number": phone_number}
-                if invoice_id:
-                    params["invoice_number"] = invoice_id
-
-                response = await client.post(
-                    f"{API_BASE_URL}/swaps/invoice",
-                    json=params
+                # Use the endpoint that includes penalty information
+                response = await client.get(
+                    f"{API_BASE_URL}/swaps/invoice-with-penalty/{phone_number}",
+                    params={"invoice_number": invoice_id} if invoice_id else {}
                 )
 
                 if response.status_code == 200:
                     data = response.json()
                     invoice = data.get("invoice", {})
+                    has_penalty = data.get("has_penalty", False)
 
                     # Format breakdown
                     breakdown_text = ""
                     for item in data.get("breakdown", []):
                         breakdown_text += f"- {item.get('item_hi', item.get('item'))}: ₹{item.get('amount')}\n"
 
+                    # Add penalty warning if applicable
+                    explanation = data.get("explanation_hi", data.get("explanation", ""))
+                    if has_penalty:
+                        penalty = data.get("penalty", {})
+                        penalty_msg = (
+                            f"\n\n⚠️ PENALTY ALERT: Rs.{penalty.get('penalty_amount', 0):.0f} ki penalty hai "
+                            f"kyunki battery {penalty.get('days_overdue', 0)} din se return nahi hui. "
+                            f"Rs.80 per day lagta hai subscription end ke 4 din baad."
+                        )
+                        explanation += penalty_msg
+
                     return [
                         SlotSet("invoice_details", data),
-                        SlotSet("invoice_explanation", data.get("explanation_hi", data.get("explanation"))),
-                        SlotSet("invoice_breakdown", breakdown_text)
+                        SlotSet("invoice_explanation", explanation),
+                        SlotSet("invoice_breakdown", breakdown_text),
+                        SlotSet("has_penalty", has_penalty),
+                        SlotSet("penalty_amount", data.get("penalty", {}).get("penalty_amount", 0) if has_penalty else 0)
                     ]
                 elif response.status_code == 404:
                     dispatcher.utter_message(
@@ -131,5 +201,54 @@ class ActionExplainInvoice(Action):
         except Exception as e:
             dispatcher.utter_message(
                 text="Technical issue hui hai. Kripya thodi der baad try karein."
+            )
+            return []
+
+
+class ActionCheckPenalty(Action):
+    """Check if there's a penalty for unreturned battery."""
+
+    def name(self) -> Text:
+        return "action_check_penalty"
+
+    async def run(
+        self,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: DomainDict
+    ) -> List[Dict[Text, Any]]:
+        phone_number = tracker.get_slot("driver_phone")
+
+        if not phone_number:
+            dispatcher.utter_message(
+                text="Maaf kijiye, aapka phone number nahi mila."
+            )
+            return []
+
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f"{API_BASE_URL}/swaps/penalty/{phone_number}"
+                )
+
+                if response.status_code == 200:
+                    data = response.json()
+                    has_penalty = data.get("has_penalty", False)
+
+                    return [
+                        SlotSet("has_penalty", has_penalty),
+                        SlotSet("penalty_amount", data.get("penalty_amount", 0)),
+                        SlotSet("days_overdue", data.get("days_overdue", 0)),
+                        SlotSet("penalty_message", data.get("message_hi", data.get("message")))
+                    ]
+                else:
+                    return [
+                        SlotSet("has_penalty", False),
+                        SlotSet("penalty_amount", 0)
+                    ]
+
+        except Exception as e:
+            dispatcher.utter_message(
+                text="Technical issue hui hai."
             )
             return []

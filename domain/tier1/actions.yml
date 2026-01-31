@@ -3,7 +3,9 @@ version: "3.1"
 actions:
   # Swap & Invoice Actions
   - action_fetch_swap_history
+  - action_fetch_swap_history_sms
   - action_explain_invoice
+  - action_check_penalty
 
   # Station Actions
   - action_find_nearest_stations
@@ -11,6 +13,7 @@ actions:
 
   # Subscription Actions
   - action_check_subscription
+  - action_check_subscription_with_penalty
   - action_show_pricing
   - action_process_renewal
 
@@ -18,7 +21,9 @@ actions:
   - action_find_nearest_dsk
   - action_get_activation_info
   - action_apply_leave
+  - action_apply_leave_with_balance
   - action_check_leave_status
+  - action_check_leave_balance
 
   # Sentiment & Handoff Actions
   - action_analyze_sentiment

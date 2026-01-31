@@ -357,3 +357,114 @@ slots:
     mappings:
       - type: custom
     influence_conversation: false
+
+  # ============================================
+  # PENALTY SLOTS
+  # ============================================
+  has_penalty:
+    type: bool
+    mappings:
+      - type: custom
+    influence_conversation: true
+
+  penalty_amount:
+    type: float
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  days_overdue:
+    type: float
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  penalty_message:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  # ============================================
+  # SMS & PAYMENT SLOTS
+  # ============================================
+  sms_sent:
+    type: bool
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  payment_link:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  order_id:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  gst_amount:
+    type: float
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  total_amount:
+    type: float
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  # ============================================
+  # LEAVE BALANCE SLOTS
+  # ============================================
+  total_leaves:
+    type: float
+    initial_value: 4
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  used_leaves:
+    type: float
+    initial_value: 0
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  remaining_leaves:
+    type: float
+    initial_value: 4
+    mappings:
+      - type: custom
+    influence_conversation: true
+
+  leave_balance_message:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  # ============================================
+  # ADDITIONAL STATION/DSK SLOTS
+  # ============================================
+  google_maps_url:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  nearest_station_address:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  dsk_maps_url:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false

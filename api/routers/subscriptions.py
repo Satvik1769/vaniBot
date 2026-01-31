@@ -106,3 +106,83 @@ async def get_plan_details(
     if not plan:
         raise HTTPException(status_code=404, detail="Plan not found")
     return plan
+
+
+@router.post("/initiate-renewal")
+async def initiate_renewal(
+    request: SubscriptionRenewalRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Initiate subscription renewal with Juspay payment.
+
+    Creates a payment order and sends payment link via SMS.
+    Plan codes: DAILY, WEEKLY, MONTHLY, YEARLY
+    """
+    result = await subscription_service.initiate_renewal(
+        db=db,
+        phone_number=request.phone_number,
+        plan_code=request.plan_code
+    )
+
+    if not result.get("success"):
+        raise HTTPException(
+            status_code=400,
+            detail=result.get("error", "Renewal initiation failed")
+        )
+
+    return result
+
+
+@router.get("/status-with-penalty/{phone_number}")
+async def get_subscription_with_penalty(
+    phone_number: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get subscription status with any applicable penalties.
+
+    Includes penalty information if battery not returned
+    after 4 days of subscription end (Rs.80/day).
+    """
+    driver = await driver_service.get_driver_by_phone(db, phone_number)
+    if not driver:
+        raise HTTPException(status_code=404, detail="Driver not found")
+
+    result = await subscription_service.get_subscription_with_penalty(db, phone_number)
+
+    return {
+        "driver_id": driver["id"],
+        "driver_name": driver.get("name"),
+        "phone_number": phone_number,
+        **result
+    }
+
+
+@router.post("/payment-callback")
+async def payment_callback(
+    payload: dict,
+    signature: str = None,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Handle Juspay payment webhook callback.
+
+    Updates transaction status and activates subscription on successful payment.
+    """
+    from ..services.payment_service import handle_payment_webhook
+
+    result = await handle_payment_webhook(db, payload, signature or "")
+    return result
+
+
+@router.get("/payment-status/{order_id}")
+async def check_payment_status(
+    order_id: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """Check payment status for an order."""
+    from ..services.payment_service import check_payment_status as check_status
+
+    result = await check_status(db, order_id)
+    return result

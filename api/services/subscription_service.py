@@ -160,10 +160,137 @@ async def create_subscription(
 async def get_pricing_info(db: AsyncSession) -> dict:
     """Get pricing information for all plans."""
     plans = await get_all_plans(db)
+
+    # Format plans with GST breakdown
+    formatted_plans = []
+    for plan in plans:
+        price = Decimal(str(plan["price"]))
+        gst = price * Decimal("0.18")
+        total = price + gst
+
+        formatted_plans.append({
+            **plan,
+            "gst_amount": float(gst),
+            "total_with_gst": float(total),
+            "per_swap_cost": float(price / plan["swaps_included"]) if plan["swaps_included"] > 0 else 0
+        })
+
     return {
-        "plans": plans,
+        "plans": formatted_plans,
         "currency": "INR",
         "tax_rate": Decimal("0.18"),
+        "gst_percentage": 18,
         "message": "Choose the plan that suits your needs. Monthly plan offers best value!",
         "message_hi": "Apni zaroorat ke hisaab se plan chunein. Monthly plan mein sabse achhi value hai!"
     }
+
+
+async def initiate_renewal(
+    db: AsyncSession,
+    phone_number: str,
+    plan_code: str
+) -> dict:
+    """Initiate subscription renewal with payment link."""
+    from .payment_service import create_payment_order
+    from .sms_service import send_payment_link_sms
+
+    # Get driver
+    driver_query = text("SELECT id, name FROM drivers WHERE phone_number = :phone")
+    driver_result = await db.execute(driver_query, {"phone": phone_number})
+    driver_row = driver_result.fetchone()
+
+    if not driver_row:
+        return {
+            "success": False,
+            "error": "Driver not found",
+            "message": "Driver not found. Please register first.",
+            "message_hi": "Driver nahi mila. Pehle registration karein."
+        }
+
+    driver_id = str(driver_row[0])
+    driver_name = driver_row[1]
+
+    # Get plan details
+    plan = await get_plan_by_code(db, plan_code.upper())
+    if not plan:
+        return {
+            "success": False,
+            "error": "Plan not found",
+            "message": f"Plan '{plan_code}' not found. Available: DAILY, WEEKLY, MONTHLY, YEARLY",
+            "message_hi": f"Plan '{plan_code}' nahi mila. Available: DAILY, WEEKLY, MONTHLY, YEARLY"
+        }
+
+    # Create payment order
+    payment_result = await create_payment_order(
+        db=db,
+        user_id=driver_id,
+        plan_id=str(plan["id"]),
+        amount=float(plan["price"]),
+        phone_number=phone_number
+    )
+
+    if not payment_result.get("success"):
+        return {
+            "success": False,
+            "error": "Payment order failed",
+            "message": "Could not create payment order. Please try again.",
+            "message_hi": "Payment order nahi ban paya. Kripya dobara try karein."
+        }
+
+    # Send payment link via SMS
+    sms_result = await send_payment_link_sms(
+        db=db,
+        phone_number=phone_number,
+        payment_link=payment_result["payment_link"],
+        plan_name=plan.get("name_hi") or plan["name"],
+        amount=payment_result["total_amount"],
+        user_id=driver_id
+    )
+
+    return {
+        "success": True,
+        "driver_name": driver_name,
+        "plan_name": plan["name"],
+        "plan_name_hi": plan.get("name_hi"),
+        "plan_code": plan["code"],
+        "price": float(plan["price"]),
+        "gst_amount": payment_result["tax_amount"],
+        "total_amount": payment_result["total_amount"],
+        "validity_days": plan["validity_days"],
+        "swaps_included": plan["swaps_included"],
+        "payment_link": payment_result["payment_link"],
+        "order_id": payment_result["order_id"],
+        "sms_sent": sms_result.get("success", False),
+        "expires_at": payment_result.get("expires_at"),
+        "message": (
+            f"Payment link for {plan['name']} (Rs.{payment_result['total_amount']:.0f}) sent to {phone_number}. "
+            f"Link valid for 24 hours."
+        ),
+        "message_hi": (
+            f"{plan.get('name_hi') or plan['name']} ke liye Rs.{payment_result['total_amount']:.0f} ka payment link "
+            f"{phone_number} pe bhej diya hai. Link 24 ghante tak valid hai."
+        )
+    }
+
+
+async def get_subscription_with_penalty(db: AsyncSession, phone_number: str) -> dict:
+    """Get subscription status with any applicable penalties."""
+    from .swap_service import get_penalty_details
+
+    subscription = await get_subscription_status(db, phone_number)
+    penalty = await get_penalty_details(db, phone_number)
+
+    if penalty and penalty.get("has_penalty"):
+        subscription["penalty"] = penalty
+        subscription["has_penalty"] = True
+
+        # Update message to include penalty
+        if subscription.get("message"):
+            subscription["message"] += f" Note: Penalty of Rs.{penalty['penalty_amount']:.0f} is applicable."
+        if subscription.get("message_hi"):
+            subscription["message_hi"] += f" Note: Rs.{penalty['penalty_amount']:.0f} ki penalty hai."
+    else:
+        subscription["penalty"] = None
+        subscription["has_penalty"] = False
+
+    return subscription

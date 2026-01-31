@@ -94,3 +94,83 @@ async def get_latest_invoice(
     if not result:
         raise HTTPException(status_code=404, detail="Invoice not found")
     return result
+
+
+@router.get("/invoice-with-penalty/{phone_number}")
+async def get_invoice_with_penalty(
+    phone_number: str,
+    invoice_number: Optional[str] = None,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get invoice details with penalty information.
+
+    If battery not returned after 4 days of subscription end,
+    penalty of Rs.80/day is applicable.
+    """
+    result = await swap_service.get_invoice_with_penalty(
+        db=db,
+        phone_number=phone_number,
+        invoice_number=invoice_number
+    )
+    return result
+
+
+@router.get("/penalty/{phone_number}")
+async def get_penalty_details(
+    phone_number: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get penalty details for unreturned battery.
+
+    Penalty: Rs.80/day after 4 days grace period past subscription end.
+    """
+    result = await swap_service.get_penalty_details(
+        db=db,
+        phone_number=phone_number
+    )
+    if not result:
+        return {
+            "has_penalty": False,
+            "message": "No active subscription found",
+            "message_hi": "Koi active subscription nahi mila"
+        }
+    return result
+
+
+@router.post("/history/send-sms/{phone_number}")
+async def send_swap_history_sms(
+    phone_number: str,
+    time_period: str = "today",
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get swap history and send it via SMS to the user.
+    """
+    from ..services.sms_service import send_swap_history_sms as sms_send
+
+    # Get swap history
+    history = await swap_service.get_swap_history(
+        db=db,
+        phone_number=phone_number,
+        time_period=time_period,
+        limit=10
+    )
+
+    # Send SMS
+    sms_result = await sms_send(
+        db=db,
+        phone_number=phone_number,
+        swaps=history.get("swaps", []),
+        time_period=time_period,
+        user_id=str(history.get("driver_id")) if history.get("driver_id") else None
+    )
+
+    return {
+        "swap_history": history,
+        "sms_sent": sms_result.get("success", False),
+        "sms_status": sms_result.get("status"),
+        "message": f"Swap history SMS sent to {phone_number}" if sms_result.get("success") else "SMS sending failed",
+        "message_hi": f"Swap history SMS {phone_number} pe bhej di" if sms_result.get("success") else "SMS bhejne mein problem hui"
+    }

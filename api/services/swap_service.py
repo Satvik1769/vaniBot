@@ -6,6 +6,10 @@ from datetime import date, datetime, timedelta
 from decimal import Decimal
 from uuid import UUID
 
+# Penalty configuration
+PENALTY_GRACE_DAYS = 4  # Days after end_date before penalty starts
+PENALTY_DAILY_RATE = Decimal("80.00")  # Rs 80 per day
+
 
 async def get_swap_history(
     db: AsyncSession,
@@ -224,4 +228,149 @@ async def get_invoice_details(
             "old_battery_id": data["old_battery_id"],
             "new_battery_id": data["new_battery_id"]
         } if data["swap_id"] else None
+    }
+
+
+async def get_penalty_details(
+    db: AsyncSession,
+    phone_number: str
+) -> Optional[dict]:
+    """Get penalty details for unreturned battery."""
+    query = text("""
+        SELECT
+            ds.id as subscription_id,
+            ds.driver_id,
+            ds.end_date,
+            ds.battery_id,
+            ds.battery_returned,
+            ds.battery_returned_date,
+            d.name as driver_name,
+            d.phone_number,
+            sp.name as plan_name,
+            CASE
+                WHEN ds.battery_returned = false
+                     AND ds.end_date < CURRENT_DATE - INTERVAL '4 days'
+                THEN true
+                ELSE false
+            END as has_penalty,
+            CASE
+                WHEN ds.battery_returned = false
+                     AND ds.end_date < CURRENT_DATE - INTERVAL '4 days'
+                THEN (CURRENT_DATE - ds.end_date - 4)
+                ELSE 0
+            END as days_overdue
+        FROM driver_subscriptions ds
+        JOIN drivers d ON ds.driver_id = d.id
+        JOIN subscription_plans sp ON ds.plan_id = sp.id
+        WHERE d.phone_number = :phone_number
+        AND ds.status = 'active'
+        ORDER BY ds.end_date DESC
+        LIMIT 1
+    """)
+
+    result = await db.execute(query, {"phone_number": phone_number})
+    row = result.fetchone()
+
+    if not row:
+        return None
+
+    data = dict(row._mapping)
+
+    if not data["has_penalty"]:
+        return {
+            "has_penalty": False,
+            "driver_name": data["driver_name"],
+            "battery_id": data["battery_id"],
+            "battery_returned": data["battery_returned"],
+            "end_date": data["end_date"],
+            "message": "No penalty applicable. Battery was returned on time.",
+            "message_hi": "Koi penalty nahi hai. Battery samay pe return ho gayi thi."
+        }
+
+    days_overdue = int(data["days_overdue"])
+    penalty_amount = float(PENALTY_DAILY_RATE * days_overdue)
+
+    return {
+        "has_penalty": True,
+        "subscription_id": str(data["subscription_id"]),
+        "driver_id": str(data["driver_id"]),
+        "driver_name": data["driver_name"],
+        "battery_id": data["battery_id"],
+        "battery_returned": data["battery_returned"],
+        "end_date": data["end_date"],
+        "days_overdue": days_overdue,
+        "daily_rate": float(PENALTY_DAILY_RATE),
+        "penalty_amount": penalty_amount,
+        "message": (
+            f"Penalty of Rs.{penalty_amount:.0f} applicable. "
+            f"Battery not returned for {days_overdue} days after grace period. "
+            f"Daily penalty rate is Rs.{PENALTY_DAILY_RATE}/day after {PENALTY_GRACE_DAYS} days past subscription end."
+        ),
+        "message_hi": (
+            f"Rs.{penalty_amount:.0f} ki penalty lagi hai. "
+            f"Battery grace period ke baad {days_overdue} din se return nahi hui. "
+            f"Subscription khatam hone ke {PENALTY_GRACE_DAYS} din baad Rs.{PENALTY_DAILY_RATE}/din penalty lagti hai."
+        ),
+        "breakdown": [
+            {
+                "item": f"Late return penalty ({days_overdue} days x Rs.{PENALTY_DAILY_RATE})",
+                "item_hi": f"Late return penalty ({days_overdue} din x Rs.{PENALTY_DAILY_RATE})",
+                "amount": penalty_amount
+            }
+        ]
+    }
+
+
+async def get_invoice_with_penalty(
+    db: AsyncSession,
+    phone_number: str,
+    invoice_number: str = None,
+    time_period: str = None
+) -> dict:
+    """Get invoice details with penalty information if applicable."""
+    # Get invoice details
+    invoice_result = await get_invoice_details(db, phone_number, invoice_number)
+
+    # Get penalty details
+    penalty_result = await get_penalty_details(db, phone_number)
+
+    combined_breakdown = []
+    total_amount = Decimal("0")
+
+    if invoice_result:
+        combined_breakdown.extend(invoice_result.get("breakdown", []))
+        total_amount += Decimal(str(invoice_result.get("invoice", {}).get("total_amount", 0)))
+
+    if penalty_result and penalty_result.get("has_penalty"):
+        combined_breakdown.extend(penalty_result.get("breakdown", []))
+        total_amount += Decimal(str(penalty_result.get("penalty_amount", 0)))
+
+    # Generate combined explanation
+    if invoice_result and penalty_result and penalty_result.get("has_penalty"):
+        explanation = (
+            f"{invoice_result.get('explanation', '')} "
+            f"Additionally, {penalty_result.get('message', '')}"
+        )
+        explanation_hi = (
+            f"{invoice_result.get('explanation_hi', '')} "
+            f"Saath hi, {penalty_result.get('message_hi', '')}"
+        )
+    elif invoice_result:
+        explanation = invoice_result.get("explanation", "")
+        explanation_hi = invoice_result.get("explanation_hi", "")
+    elif penalty_result:
+        explanation = penalty_result.get("message", "")
+        explanation_hi = penalty_result.get("message_hi", "")
+    else:
+        explanation = "No invoice or penalty found."
+        explanation_hi = "Koi invoice ya penalty nahi mili."
+
+    return {
+        "invoice": invoice_result.get("invoice") if invoice_result else None,
+        "penalty": penalty_result if penalty_result and penalty_result.get("has_penalty") else None,
+        "breakdown": combined_breakdown,
+        "total_amount": float(total_amount),
+        "explanation": explanation,
+        "explanation_hi": explanation_hi,
+        "has_penalty": penalty_result.get("has_penalty", False) if penalty_result else False
     }

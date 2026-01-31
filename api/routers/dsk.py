@@ -152,3 +152,83 @@ async def get_leave_status(
 ):
     """Get leave status using phone number."""
     return await dsk_service.get_leave_status(db, phone_number)
+
+
+@router.get("/leave-balance/{phone_number}")
+async def get_leave_balance(
+    phone_number: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get leave balance for current month.
+
+    Each user gets 4 leaves per month to submit their battery.
+    """
+    result = await dsk_service.get_leave_balance(db, phone_number)
+
+    if not result.get("found"):
+        raise HTTPException(status_code=404, detail="Driver not found")
+
+    return result
+
+
+@router.post("/leave/with-balance")
+async def apply_leave_with_balance(
+    request: LeaveRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Submit a leave request and deduct from balance.
+
+    Each user gets 4 leaves per month. This endpoint checks
+    balance before creating the leave request.
+    """
+    # Validate dates
+    if request.end_date < request.start_date:
+        raise HTTPException(
+            status_code=400,
+            detail="End date must be after start date"
+        )
+
+    # Calculate days needed
+    days_needed = (request.end_date - request.start_date).days + 1
+
+    # Check balance first
+    balance = await dsk_service.get_leave_balance(db, request.phone_number)
+    if not balance.get("found"):
+        raise HTTPException(status_code=404, detail="Driver not found")
+
+    if balance["remaining_leaves"] < days_needed:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "Insufficient leave balance",
+                "remaining_leaves": balance["remaining_leaves"],
+                "days_requested": days_needed,
+                "message": f"Not enough leaves. You have {balance['remaining_leaves']} remaining, but need {days_needed}.",
+                "message_hi": f"Aapke paas {balance['remaining_leaves']} leaves hain, lekin {days_needed} chahiye."
+            }
+        )
+
+    # Apply leave
+    result = await dsk_service.apply_leave(
+        db=db,
+        phone_number=request.phone_number,
+        start_date=request.start_date,
+        end_date=request.end_date,
+        reason=request.reason
+    )
+
+    if not result:
+        raise HTTPException(status_code=500, detail="Leave creation failed")
+
+    # Deduct from balance
+    balance_result = await dsk_service.use_leave(db, request.phone_number, days_needed)
+
+    return {
+        **result,
+        "leave_balance": {
+            "used": days_needed,
+            "remaining_after": balance_result.get("remaining_leaves", balance["remaining_leaves"] - days_needed)
+        }
+    }
