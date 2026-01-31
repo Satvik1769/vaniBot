@@ -56,6 +56,17 @@ from .geolocation_service import (
     get_nearest_stations as geo_get_nearest_stations,
     get_nearest_dsk as geo_get_nearest_dsk
 )
+from .conversation_log_service import (
+    conversation_log_service,
+    start_conversation_log,
+    add_conversation_turn,
+    end_conversation_log
+)
+from .s3_service import (
+    s3_service,
+    upload_conversation_to_s3,
+    upload_audio_to_s3
+)
 
 __all__ = [
     # Driver
@@ -107,4 +118,13 @@ __all__ = [
     "save_caller_location",
     "geo_get_nearest_stations",
     "geo_get_nearest_dsk",
+    # Conversation Logging
+    "conversation_log_service",
+    "start_conversation_log",
+    "add_conversation_turn",
+    "end_conversation_log",
+    # S3
+    "s3_service",
+    "upload_conversation_to_s3",
+    "upload_audio_to_s3",
 ]

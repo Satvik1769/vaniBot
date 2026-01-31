@@ -28,6 +28,20 @@ from .twilio_handler import (
 )
 from .text_correction import CorrectionPipeline
 
+# Conversation logging (imported lazily to avoid circular imports)
+_conversation_log_service = None
+
+def get_conversation_log_service():
+    """Lazy import of conversation log service."""
+    global _conversation_log_service
+    if _conversation_log_service is None:
+        try:
+            from api.services.conversation_log_service import conversation_log_service
+            _conversation_log_service = conversation_log_service
+        except ImportError:
+            logger.warning("Conversation log service not available")
+    return _conversation_log_service
+
 logger = logging.getLogger(__name__)
 
 RASA_URL = os.getenv("RASA_URL", "http://localhost:5005")
@@ -144,8 +158,40 @@ class VoiceOrchestrator:
         except Exception as e:
             logger.warning(f"Failed to send session_start to Rasa: {e}")
 
+        # Start conversation logging (async, don't block)
+        asyncio.create_task(self._log_conversation_start(
+            session_id=session_id,
+            phone_number=phone_number,
+            call_sid=call_sid,
+            metadata=metadata
+        ))
+
         logger.info(f"Started voice session: {session_id}")
         return session
+
+    async def _log_conversation_start(
+        self,
+        session_id: str,
+        phone_number: str,
+        call_sid: str = None,
+        metadata: Dict[str, Any] = None
+    ):
+        """Log conversation start to database."""
+        try:
+            log_service = get_conversation_log_service()
+            if log_service:
+                from api.core.database import get_db_context
+                async with get_db_context() as db:
+                    await log_service.start_conversation(
+                        db=db,
+                        session_id=session_id,
+                        phone_number=phone_number,
+                        channel="voice",
+                        call_sid=call_sid,
+                        metadata=metadata
+                    )
+        except Exception as e:
+            logger.error(f"Failed to log conversation start: {e}")
 
     async def synthesize_for_twilio(self, text: str, language: str = "hi-en") -> bytes:
         """Synthesize text and return raw PCM at 8kHz (ready for Twilio encoding).
@@ -273,6 +319,14 @@ class VoiceOrchestrator:
 
         session.turn_count += 1
 
+        # Log user turn (async, don't block)
+        asyncio.create_task(self._log_turn(
+            session_id=session_id,
+            role="user",
+            message=transcript.text,
+            confidence=transcript.confidence
+        ))
+
         # Check handoff
         if self._should_handoff(rasa_response):
             if self.on_handoff:
@@ -282,6 +336,14 @@ class VoiceOrchestrator:
         # Get response text and synthesize
         response_text = self._extract_response_text(rasa_response)
         logger.info(f"Response text to synthesize: '{response_text}'")
+
+        # Log bot turn (async, don't block)
+        if response_text:
+            asyncio.create_task(self._log_turn(
+                session_id=session_id,
+                role="bot",
+                message=response_text
+            ))
 
         if response_text:
             if self.on_response:
@@ -376,8 +438,62 @@ class VoiceOrchestrator:
         except Exception as e:
             logger.warning(f"Failed to send session_end to Rasa: {e}")
 
+        # End conversation logging and upload to S3
+        resolution = "escalated" if reason == "handoff" else "resolved" if reason == "completed" else "abandoned"
+        asyncio.create_task(self._log_conversation_end(
+            session_id=session_id,
+            resolution_status=resolution,
+            escalated=(reason == "handoff")
+        ))
+
         del self.sessions[session_id]
         logger.info(f"Ended voice session: {session_id} (reason={reason})")
+
+    async def _log_turn(
+        self,
+        session_id: str,
+        role: str,
+        message: str,
+        confidence: float = None
+    ):
+        """Log a conversation turn to database."""
+        try:
+            log_service = get_conversation_log_service()
+            if log_service:
+                from api.core.database import get_db_context
+                async with get_db_context() as db:
+                    await log_service.add_turn(
+                        db=db,
+                        session_id=session_id,
+                        role=role,
+                        message=message,
+                        confidence=confidence
+                    )
+        except Exception as e:
+            logger.error(f"Failed to log turn: {e}")
+
+    async def _log_conversation_end(
+        self,
+        session_id: str,
+        resolution_status: str = "resolved",
+        escalated: bool = False
+    ):
+        """Log conversation end and upload to S3."""
+        try:
+            log_service = get_conversation_log_service()
+            if log_service:
+                from api.core.database import get_db_context
+                async with get_db_context() as db:
+                    result = await log_service.end_conversation(
+                        db=db,
+                        session_id=session_id,
+                        resolution_status=resolution_status,
+                        escalated=escalated
+                    )
+                    if result and result.get("s3_url"):
+                        logger.info(f"Conversation saved to S3: {result['s3_url']}")
+        except Exception as e:
+            logger.error(f"Failed to log conversation end: {e}")
 
     # ── Internal helpers ────────────────────────────────────────
 
