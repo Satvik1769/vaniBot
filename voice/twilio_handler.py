@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
+EXECUTIVE_PHONE_NUMBER = os.getenv("EXECUTIVE_PHONE_NUMBER", "+919999999999")
 
 # Twilio Media Streams sends mulaw 8kHz mono audio
 TWILIO_SAMPLE_RATE = 8000
@@ -627,3 +628,66 @@ class TwilioHandler:
             "duration": duration,
             "from": from_number,
         }
+
+    async def forward_call(
+        self,
+        call_sid: str,
+        forward_to: str = None,
+        caller_id: str = None,
+        announce_message: str = None,
+    ) -> bool:
+        """Forward/transfer an active call to another phone number.
+
+        Args:
+            call_sid: The SID of the call to forward
+            forward_to: Phone number to forward to (defaults to EXECUTIVE_PHONE_NUMBER)
+            caller_id: Caller ID to display (defaults to TWILIO_PHONE_NUMBER)
+            announce_message: Optional message to play before connecting
+
+        Returns:
+            True if forward was successful, False otherwise
+        """
+        forward_to = forward_to or EXECUTIVE_PHONE_NUMBER
+        caller_id = caller_id or self.phone_number
+
+        # Build TwiML for forwarding
+        if announce_message:
+            twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Say language="hi-IN">{announce_message}</Say>
+    <Dial callerId="{caller_id}" timeout="30">
+        <Number>{forward_to}</Number>
+    </Dial>
+</Response>"""
+        else:
+            twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Dial callerId="{caller_id}" timeout="30">
+        <Number>{forward_to}</Number>
+    </Dial>
+</Response>"""
+
+        url = (
+            f"https://api.twilio.com/2010-04-01/Accounts/"
+            f"{self.account_sid}/Calls/{call_sid}.json"
+        )
+
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    url,
+                    data={"Twiml": twiml},
+                    auth=(self.account_sid, self.auth_token),
+                    timeout=30.0,
+                )
+                if response.status_code == 200:
+                    logger.info(f"Call {call_sid} forwarded to {forward_to}")
+                    return True
+                else:
+                    logger.error(
+                        f"Failed to forward call: {response.status_code} {response.text}"
+                    )
+                    return False
+        except Exception as e:
+            logger.error(f"Error forwarding call: {e}")
+            return False

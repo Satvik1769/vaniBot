@@ -564,10 +564,16 @@ class VoiceOrchestrator:
         """Check if response indicates handoff needed."""
         responses = rasa_response.get("responses", [])
         for resp in responses:
+            # Check custom action field
             if resp.get("custom", {}).get("action") == "handoff":
                 return True
+            # Check json_message from dispatcher.utter_message(json_message={...})
+            if resp.get("json_message", {}).get("action") == "handoff":
+                logger.info("Handoff triggered via json_message")
+                return True
+            # Check text patterns as fallback
             text = resp.get("text", "").lower()
-            if "agent se connect" in text or "transfer" in text:
+            if "agent se connect" in text or "transfer" in text or "executive" in text:
                 return True
         return False
 

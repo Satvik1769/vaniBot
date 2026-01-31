@@ -202,6 +202,48 @@ async def twilio_media_stream_ws(websocket: WebSocket):
 
     session_id = None
     stream_sid = None
+    call_sid = None
+
+    async def handle_handoff(session, rasa_response):
+        """Handle call forwarding to executive when user requests it."""
+        nonlocal call_sid, stream_sid
+        if not call_sid:
+            logger.warning("Cannot forward call: no call_sid available")
+            return
+
+        logger.info(f"Initiating call forward for session {session.session_id}")
+
+        # Send transfer message to user
+        transfer_msg = "Main aapki call humare executive ko transfer kar rahi hoon. Kripya hold karein."
+        try:
+            transfer_pcm = await orchestrator.synthesize_for_twilio(
+                transfer_msg, session.language
+            )
+            await _send_audio_to_twilio(websocket, stream_sid, transfer_pcm)
+            mark = TwilioHandler.create_mark_message(stream_sid, "transfer_announcement")
+            await websocket.send_text(json.dumps(mark))
+        except Exception as e:
+            logger.error(f"Failed to send transfer message: {e}")
+
+        # Forward the call to executive
+        success = await twilio.forward_call(call_sid)
+        if success:
+            logger.info(f"Call {call_sid} forwarded to executive")
+            await orchestrator.end_session(session.session_id, reason="handoff")
+        else:
+            logger.error(f"Failed to forward call {call_sid}")
+            # Send apology message
+            apology = "Maaf kijiye, abhi executive available nahi hain. Kripya baad mein call karein."
+            try:
+                apology_pcm = await orchestrator.synthesize_for_twilio(
+                    apology, session.language
+                )
+                await _send_audio_to_twilio(websocket, stream_sid, apology_pcm)
+            except Exception as e:
+                logger.error(f"Failed to send apology: {e}")
+
+    # Set up handoff callback
+    orchestrator.on_handoff = handle_handoff
 
     try:
         while True:
@@ -215,11 +257,12 @@ async def twilio_media_stream_ws(websocket: WebSocket):
             elif event == "start":
                 call_info = twilio.parse_start_event(data)
                 stream_sid = call_info.stream_sid
-                session_id = call_info.call_sid or stream_sid
+                call_sid = call_info.call_sid
+                session_id = call_sid or stream_sid
 
                 logger.info(
                     f"Twilio stream started: stream_sid={stream_sid}, "
-                    f"call_sid={call_info.call_sid}, "
+                    f"call_sid={call_sid}, "
                     f"phone={call_info.phone_number}"
                 )
 
@@ -228,7 +271,7 @@ async def twilio_media_stream_ws(websocket: WebSocket):
                     phone_number=call_info.phone_number,
                     session_id=session_id,
                     stream_sid=stream_sid,
-                    call_sid=call_info.call_sid,
+                    call_sid=call_sid,
                     metadata=call_info.custom_parameters,
                 )
 
@@ -373,6 +416,31 @@ async def make_outbound_call(
     if call_sid:
         return {"call_sid": call_sid, "status": "initiated"}
     return JSONResponse(status_code=500, content={"detail": "Failed to initiate call"})
+
+
+@app.post("/api/v1/voice/forward-call", tags=["Voice"])
+async def forward_call_to_executive(
+    call_sid: str,
+    forward_to: str = None,
+):
+    """
+    Forward an active call to an executive.
+
+    Args:
+        call_sid: The Twilio Call SID to forward
+        forward_to: Optional phone number to forward to (defaults to EXECUTIVE_PHONE_NUMBER env var)
+    """
+    success = await twilio.forward_call(call_sid, forward_to=forward_to)
+    if success:
+        return {
+            "call_sid": call_sid,
+            "status": "forwarded",
+            "message": "Call forwarded to executive"
+        }
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Failed to forward call"}
+    )
 
 
 if __name__ == "__main__":

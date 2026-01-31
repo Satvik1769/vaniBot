@@ -67,7 +67,7 @@ async def create_driver(db: AsyncSession, phone_number: str, name: str = None,
                         preferred_language: str = "hi-en", city: str = None) -> dict:
     """Create a new driver."""
     query = text("""
-        INSERT INTO drivers (phone_number, name, preferred_language, city)
+        INSERT INTO drivers (phone_number, driver_name, preferred_language, city)
         VALUES (:phone_number, :name, :preferred_language, :city)
         RETURNING id, phone_number, name, preferred_language, city, created_at, is_active
     """)
