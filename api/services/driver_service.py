@@ -9,7 +9,7 @@ from datetime import datetime
 async def get_driver_by_phone(db: AsyncSession, phone_number: str) -> Optional[dict]:
     """Get driver by phone number."""
     query = text("""
-        SELECT id, phone_number, name, email, preferred_language, city, created_at, is_active
+        SELECT id, phone_number, driver_name, email, preferred_language, city, created_at, is_active
         FROM drivers
         WHERE phone_number = :phone_number AND is_active = true
     """)

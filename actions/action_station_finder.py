@@ -42,7 +42,7 @@ class ActionFindNearestStations(Action):
                         params={
                             "latitude": latitude,
                             "longitude": longitude,
-                            "limit": 5
+                            "limit": 1
                         }
                     )
                 # Priority 2: Use phone number for geolocation lookup
@@ -68,6 +68,7 @@ class ActionFindNearestStations(Action):
 
                 if response.status_code == 200:
                     data = response.json()
+                    logger.info(f"[StationFinder] API response: {data}")
                     stations = data.get("stations", [])
                     user_location = data.get("user_location", {})
 
@@ -89,30 +90,63 @@ class ActionFindNearestStations(Action):
                             station_list_text += f"{i}. {name} - {available} batteries available\n"
 
                     nearest = stations[0]
+                    logger.info(f"[StationFinder] Nearest station: {nearest}")
+
+                    # Get values with defaults to avoid None
+                    station_name = nearest.get("name") or "Unknown Station"
+                    station_address = nearest.get("address") or ""
+                    batteries_available = nearest.get("available_batteries", 0) or 0
+                    maps_url = nearest.get("google_map_url", "")
 
                     # Include Google Maps URL for first station
-                    maps_url = nearest.get("google_map_url", "")
                     if maps_url:
                         station_list_text += f"\nDirections: {maps_url}"
+
+                    # Dispatch message directly to ensure correct data
+                    dispatcher.utter_message(
+                        text=f"Sabse nazdeeki station {station_name} hai, jahan {batteries_available} batteries available hain."
+                    )
+
+                    # Send directions via SMS
+                    if phone_number and maps_url:
+                        try:
+                            sms_response = await client.post(
+                                f"{API_BASE_URL}/stations/send-directions-sms/{phone_number}",
+                                params={
+                                    "station_name": station_name,
+                                    "station_address": station_address,
+                                    "available_batteries": batteries_available,
+                                    "google_maps_url": maps_url
+                                }
+                            )
+                            if sms_response.status_code == 200:
+                                logger.info(f"[StationFinder] Directions SMS sent to {phone_number}")
+                                dispatcher.utter_message(text="Google Maps link aapke phone pe bhej diya gaya hai.")
+                            else:
+                                logger.warning(f"[StationFinder] SMS failed: {sms_response.text}")
+                        except Exception as sms_error:
+                            logger.error(f"[StationFinder] SMS error: {sms_error}")
 
                     return [
                         SlotSet("nearest_stations", stations),
                         SlotSet("station_list", station_list_text),
                         SlotSet("station_count", len(stations)),
-                        SlotSet("nearest_station_name", nearest.get("name")),
-                        SlotSet("nearest_station_address", nearest.get("address")),
-                        SlotSet("available_batteries", nearest.get("available_batteries", 0)),
+                        SlotSet("nearest_station_name", station_name),
+                        SlotSet("nearest_station_address", station_address),
+                        SlotSet("available_batteries", batteries_available),
                         SlotSet("google_maps_url", maps_url),
                         SlotSet("user_latitude", user_location.get("latitude")),
                         SlotSet("user_longitude", user_location.get("longitude"))
                     ]
                 else:
+                    logger.error(f"[StationFinder] API error: {response.status_code} - {response.text}")
                     dispatcher.utter_message(
                         text="Stations dhundhne mein problem hui. Thodi der baad try karein."
                     )
                     return []
 
         except Exception as e:
+            logger.error(f"[StationFinder] Exception: {e}", exc_info=True)
             dispatcher.utter_message(
                 text="Technical issue hui hai. Kripya thodi der baad try karein."
             )
@@ -179,6 +213,7 @@ class ActionCheckStationAvailability(Action):
                     return []
 
         except Exception as e:
+            logger.error(f"[StationFinder] Exception: {e}", exc_info=True)
             dispatcher.utter_message(
                 text="Technical issue hui hai. Kripya thodi der baad try karein."
             )

@@ -14,6 +14,7 @@ from deepgram import (
     DeepgramClientOptions,
     LiveTranscriptionEvents,
     LiveOptions,
+    PrerecordedOptions,
 )
 
 logger = logging.getLogger(__name__)
@@ -40,7 +41,15 @@ class TTSResult:
 
 
 class DeepgramSTT:
-    """Deepgram Speech-to-Text client with streaming support."""
+    """Deepgram Speech-to-Text client with streaming and batch support."""
+
+    # Domain-specific vocabulary for speech adaptation (similar to Google STT)
+    DOMAIN_PHRASES = [
+        "Battery Smart", "battery swap", "swap station", "charging station",
+        "subscription", "monthly plan", "nearest station",
+        "kahan hai", "batao", "dikhao", "chahiye", "kitna", "kitni",
+        "namaste", "dhanyawad",
+    ]
 
     def __init__(self, api_key: str = None):
         self.api_key = api_key or DEEPGRAM_API_KEY
@@ -51,6 +60,84 @@ class DeepgramSTT:
         self.client = DeepgramClient(self.api_key, config)
         self.connection = None
         self.transcript_callback: Optional[Callable] = None
+
+    async def transcribe(
+        self,
+        audio_data: bytes,
+        language: str = "hi",
+        sample_rate: int = 16000,
+    ) -> Optional[TranscriptionResult]:
+        """Transcribe audio using Deepgram REST API (non-streaming).
+
+        Args:
+            audio_data: Raw PCM audio bytes
+            language: Language code (hi, en, hi-en for multilingual)
+            sample_rate: Audio sample rate in Hz
+
+        Returns:
+            TranscriptionResult or None if transcription failed
+        """
+        try:
+            # Map language codes - avoid "multi" as it doesn't work well for short audio
+            lang_map = {
+                "hi": "hi",
+                "hi-en": "hi",  # Use Hindi for Hinglish (better than multi)
+                "en": "en",
+            }
+            dg_language = lang_map.get(language, "hi")
+
+            options = PrerecordedOptions(
+                model="nova-2",
+                language=dg_language,
+                smart_format=True,
+                punctuate=True,
+                diarize=False,
+                keywords=self.DOMAIN_PHRASES,
+                encoding="linear16",
+                channels=1,
+                sample_rate=sample_rate,
+            )
+
+            # Use the prerecorded API
+            source = {"buffer": audio_data, "mimetype": "audio/raw"}
+            response = await self.client.listen.asyncrest.v("1").transcribe_file(
+                source, options
+            )
+
+            if response and response.results and response.results.channels:
+                channel = response.results.channels[0]
+                if channel.alternatives:
+                    alt = channel.alternatives[0]
+
+                    # Extract words if available
+                    words = []
+                    if hasattr(alt, 'words') and alt.words:
+                        words = [{
+                            "word": w.word,
+                            "start": w.start,
+                            "end": w.end,
+                            "confidence": w.confidence
+                        } for w in alt.words]
+
+                    detected_lang = (
+                        response.results.channels[0].detected_language
+                        if hasattr(response.results.channels[0], 'detected_language')
+                        else language
+                    )
+
+                    return TranscriptionResult(
+                        text=alt.transcript,
+                        confidence=alt.confidence,
+                        is_final=True,
+                        language=detected_lang or language,
+                        words=words,
+                    )
+
+            return None
+
+        except Exception as e:
+            logger.error(f"Deepgram transcribe error: {e}")
+            return None
 
     async def start_streaming(
         self,

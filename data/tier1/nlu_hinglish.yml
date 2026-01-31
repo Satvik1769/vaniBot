@@ -112,6 +112,7 @@ nlu:
     - nearest dsk with batteries
     - battery available kahan hai
     - kahan pe battery milegi
+    - sabse jyada paas konsa station hai
 
 - intent: check_station_availability
   examples: |
@@ -330,6 +331,7 @@ nlu:
     - aap mujhe dsk ke baare mein batao
     - dsk ke baare mein bata sakte hain
     - dsk batao please
+    - sabse paas konsa dsk hai
 
 - intent: check_leave_status
   examples: |

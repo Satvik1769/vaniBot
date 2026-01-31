@@ -1,4 +1,6 @@
 """Station and availability endpoints."""
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
@@ -237,7 +239,7 @@ async def find_nearest_by_phone(
 async def find_nearest_dsk_by_phone(
     phone_number: str,
     request: Request,
-    limit: int = Query(default=3, ge=1, le=5),
+    limit: int = 1,
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -256,6 +258,7 @@ async def find_nearest_dsk_by_phone(
         phone_number=phone_number,
         ip_address=client_ip
     )
+    logging.log(logging.INFO, f"Found {location} stations near you.")
 
     # Find nearest DSK
     dsk_list = await geo_dsk(
@@ -272,4 +275,32 @@ async def find_nearest_dsk_by_phone(
         "total_found": len(dsk_list),
         "message": f"Found {len(dsk_list)} DSK locations near you." if dsk_list else "No DSK found nearby.",
         "message_hi": f"Aapke paas {len(dsk_list)} DSK mile." if dsk_list else "Aapke paas koi DSK nahi mila."
+    }
+
+
+@router.post("/send-directions-sms/{phone_number}")
+async def send_station_directions_sms(
+    phone_number: str,
+    station_name: str,
+    station_address: str = "",
+    available_batteries: int = 0,
+    google_maps_url: str = "",
+    db: AsyncSession = Depends(get_db)
+):
+    """Send station directions to user via SMS."""
+    from ..services.sms_service import send_station_directions_sms as send_sms_func
+
+    result = await send_sms_func(
+        db=db,
+        phone_number=phone_number,
+        station_name=station_name,
+        station_address=station_address,
+        available_batteries=available_batteries,
+        google_maps_url=google_maps_url
+    )
+
+    return {
+        "success": result.get("success", False),
+        "message": "SMS sent successfully" if result.get("success") else result.get("error", "Failed to send SMS"),
+        "sms_sid": result.get("sid")
     }

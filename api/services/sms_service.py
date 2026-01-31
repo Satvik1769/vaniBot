@@ -7,6 +7,9 @@ from twilio.base.exceptions import TwilioRestException
 import os
 from datetime import datetime
 import logging
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +20,7 @@ TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
 
 # Initialize Twilio client
 twilio_client = None
+logger.info(f"Initializing Twilio client - SID: {TWILIO_ACCOUNT_SID[:10] if TWILIO_ACCOUNT_SID else 'NOT SET'}...")
 if TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN:
     twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
@@ -29,8 +33,10 @@ async def send_sms(
     user_id: str = None
 ) -> dict:
     """Send SMS via Twilio and log to database."""
+    logger.info(f"[SMS] Attempting to send SMS to {phone_number}, type={message_type}")
+
     if not twilio_client:
-        logger.error("Twilio client not initialized")
+        logger.error("[SMS] Twilio client not initialized - check TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN")
         return {
             "success": False,
             "error": "SMS service not configured",
@@ -47,11 +53,13 @@ async def send_sms(
 
     try:
         # Send SMS via Twilio
+        logger.info(f"[SMS] Sending via Twilio: from={TWILIO_PHONE_NUMBER}, to={formatted_phone}")
         message_response = twilio_client.messages.create(
             body=message,
             from_=TWILIO_PHONE_NUMBER,
             to=formatted_phone
         )
+        logger.info(f"[SMS] Sent successfully! SID={message_response.sid}, status={message_response.status}")
 
         # Log to database
         await log_sms(
@@ -109,6 +117,8 @@ async def log_sms(
 ):
     """Log SMS to database."""
     try:
+
+        logger.info(f"Logging SMS to {phone_number}")
         query = text("""
             INSERT INTO sms_logs (user_id, phone_number, message_type, message_content, twilio_sid, status, error_message)
             VALUES (:user_id, :phone_number, :message_type, :message_content, :twilio_sid, :status, :error_message)
@@ -234,3 +244,23 @@ async def send_penalty_notification_sms(
         f"Kripya jaldi se battery return karein."
     )
     return await send_sms(db, phone_number, message, "penalty_notification", user_id)
+
+
+async def send_station_directions_sms(
+    db: AsyncSession,
+    phone_number: str,
+    station_name: str,
+    station_address: str,
+    available_batteries: int,
+    google_maps_url: str,
+    user_id: str = None
+) -> dict:
+    """Send station directions via SMS."""
+    message = (
+        f"Battery Smart\n\n"
+        f"Nearest Station: {station_name}\n"
+        f"Address: {station_address}\n"
+        f"Available: {available_batteries} batteries\n\n"
+        f"Directions: {google_maps_url}"
+    )
+    return await send_sms(db, phone_number, message, "station_directions", user_id)

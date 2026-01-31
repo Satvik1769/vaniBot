@@ -49,7 +49,7 @@ async def get_swap_history(
             sw.swap_time, sw.is_subscription_swap, sw.charge_amount, sw.status,
             s.name as station_name, s.code as station_code,
             i.invoice_number,
-            d.name as driver_name
+            d.driver_name as driver_name
         FROM swaps sw
         JOIN drivers d ON sw.driver_id = d.id
         JOIN stations s ON sw.station_id = s.id

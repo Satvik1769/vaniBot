@@ -14,7 +14,7 @@ async def get_leave_balance(db: AsyncSession, phone_number: str) -> dict:
     current_month = datetime.now().strftime("%Y-%m")
 
     # Get driver
-    driver_query = text("SELECT id, name FROM drivers WHERE phone_number = :phone")
+    driver_query = text("SELECT id, driver_name FROM drivers WHERE phone_number = :phone")
     driver_result = await db.execute(driver_query, {"phone": phone_number})
     driver_row = driver_result.fetchone()
 

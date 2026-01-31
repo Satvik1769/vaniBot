@@ -222,9 +222,8 @@ DEVANAGARI_TO_ROMAN = {
 class HinglishTransliterator:
     """Transliterates Devanagari text to Roman script for NLU matching.
 
-    Uses a hybrid approach:
-    1. Fast local transliteration using character mapping (primary)
-    2. Google Cloud Translation API for refinement (optional fallback)
+    Uses local character mapping for fast, reliable transliteration.
+    No external API dependencies (Google Translate removed).
 
     Handles:
     - Pure Hindi (Devanagari) -> Roman
@@ -235,29 +234,15 @@ class HinglishTransliterator:
     DEVANAGARI_RANGE = re.compile(r'[\u0900-\u097F]')
     DEVANAGARI_WORD = re.compile(r'[\u0900-\u097F]+')
 
-    def __init__(self, use_google_api: bool = True):
+    def __init__(self, use_google_api: bool = False):
         """Initialize transliterator.
 
         Args:
-            use_google_api: If True, use Google Translate API for better results.
-                           If False, use only local character mapping.
+            use_google_api: Deprecated, kept for backward compatibility.
+                           Now uses only local character mapping (faster, no API cost).
         """
-        self.use_google_api = use_google_api
-        self._google_client = None
-        self._google_initialized = False
-
-    def _ensure_google_client(self):
-        """Lazy initialization of Google Translate client."""
-        if not self._google_initialized and self.use_google_api:
-            try:
-                from google.cloud import translate_v2 as translate
-                self._google_client = translate.Client()
-                self._google_initialized = True
-                logger.info("Google Translate client initialized for transliteration")
-            except Exception as e:
-                logger.warning(f"Google Translate unavailable, using local transliteration: {e}")
-                self._google_initialized = True
-                self._google_client = None
+        # Google API is no longer used - using local transliteration only
+        pass
 
     def contains_devanagari(self, text: str) -> bool:
         """Check if text contains Devanagari characters."""
@@ -358,20 +343,7 @@ class HinglishTransliterator:
         if not self.contains_devanagari(text):
             return text
 
-        # Try Google API first if enabled (better quality)
-        if self.use_google_api:
-            self._ensure_google_client()
-            if self._google_client:
-                try:
-                    # Google Translate will convert Hindi to English
-                    # This gives us a semantic understanding, not just transliteration
-                    # But for NLU purposes, we want transliteration
-                    # So we use local method as primary
-                    pass
-                except Exception as e:
-                    logger.debug(f"Google API error, using local: {e}")
-
-        # Use local transliteration (fast and reliable)
+        # Use local transliteration (fast and reliable, no external API)
         result = self._local_transliterate(text)
         result = self._clean_transliteration(result)
         # Apply phonetic corrections for English words transcribed in Hindi
@@ -381,11 +353,10 @@ class HinglishTransliterator:
         return result
 
     async def transliterate_async(self, text: str) -> str:
-        """Async transliteration with optional Google API enhancement.
+        """Async transliteration using local character mapping.
 
-        For voice applications, uses:
-        1. Local transliteration (fast, ~0ms)
-        2. Optional Google API call for refinement
+        For voice applications, uses fast local transliteration (~0ms).
+        No external API dependencies.
         """
         if not text or not text.strip():
             return text
@@ -393,61 +364,14 @@ class HinglishTransliterator:
         if not self.contains_devanagari(text):
             return text
 
-        # Primary: Local transliteration (instant)
-        local_result = self._local_transliterate(text)
-        local_result = self._clean_transliteration(local_result)
+        # Local transliteration (instant, no API calls)
+        result = self._local_transliterate(text)
+        result = self._clean_transliteration(result)
         # Apply phonetic corrections for English words transcribed in Hindi
-        local_result = self._apply_phonetic_corrections(local_result)
+        result = self._apply_phonetic_corrections(result)
 
-        # Optional: Try Google for better results on complex text
-        if self.use_google_api and len(text) > 10:
-            try:
-                google_result = await self._google_transliterate_async(text)
-                if google_result and google_result != text:
-                    # Google returned something, use it if it looks reasonable
-                    # But prefer local for NLU matching since our NLU is trained on Hinglish
-                    logger.debug(f"Google result: '{google_result}', Local result: '{local_result}'")
-                    # Use local result as it matches our NLU training data better
-            except Exception as e:
-                logger.debug(f"Google API error: {e}")
-
-        logger.info(f"Transliterated: '{text}' -> '{local_result}'")
-        return local_result
-
-    async def _google_transliterate_async(self, text: str) -> Optional[str]:
-        """Call Google Translate API asynchronously."""
-        try:
-            from google.auth import default
-            from google.auth.transport.requests import Request
-
-            credentials, project = default()
-            credentials.refresh(Request())
-
-            async with httpx.AsyncClient(timeout=3.0) as client:
-                # Use romanization endpoint if available (v3 API)
-                # Fall back to translation
-                response = await client.post(
-                    "https://translation.googleapis.com/language/translate/v2",
-                    headers={
-                        "Authorization": f"Bearer {credentials.token}",
-                        "Content-Type": "application/json"
-                    },
-                    json={
-                        "q": text,
-                        "source": "hi",
-                        "target": "en",
-                        "format": "text"
-                    }
-                )
-
-                if response.status_code == 200:
-                    data = response.json()
-                    return data["data"]["translations"][0]["translatedText"]
-
-        except Exception as e:
-            logger.debug(f"Google transliteration error: {e}")
-
-        return None
+        logger.info(f"Transliterated: '{text}' -> '{result}'")
+        return result
 
 
 # ══════════════════════════════════════════════════════════════════════════════
