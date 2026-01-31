@@ -42,7 +42,7 @@ async def get_swap_history(
 @router.get("/history/{phone_number}", response_model=SwapHistoryResponse)
 async def get_swap_history_simple(
     phone_number: str,
-    time_period: str = "today",
+    time_period: str = "all",
     limit: int = 20,
     db: AsyncSession = Depends(get_db)
 ):

@@ -26,7 +26,6 @@ from .twilio_handler import (
     TWILIO_SAMPLE_RATE,
 )
 from .text_correction import CorrectionPipeline
-from .translation_service import TranslationService
 
 # Conversation logging (imported lazily to avoid circular imports)
 _conversation_log_service = None
@@ -90,8 +89,7 @@ class VoiceSession:
 class VoiceOrchestrator:
     """Orchestrates voice interaction using Deepgram STT/TTS and Rasa via Twilio.
 
-    Now uses Deepgram instead of Google for speech-to-text.
-    Includes translation to Romanian and Hindi for multilingual support.
+    Uses Deepgram for speech-to-text and text-to-speech.
     """
 
     def __init__(
@@ -99,7 +97,6 @@ class VoiceOrchestrator:
         deepgram_api_key: str = None,
         rasa_url: str = None,
         on_audio_output: Callable[[bytes], None] = None,
-        enable_translation: bool = True
     ):
         self.deepgram_api_key = deepgram_api_key or os.getenv("DEEPGRAM_API_KEY")
         self.rasa_url = rasa_url or RASA_URL
@@ -111,10 +108,6 @@ class VoiceOrchestrator:
         # Text correction pipeline with transliteration (Devanagari -> Roman)
         self.text_corrector = CorrectionPipeline(use_llm=False, use_transliteration=True)
 
-        # Translation service for Romanian and Hindi
-        self.enable_translation = enable_translation
-        self.translation_service = TranslationService() if enable_translation else None
-
         self.sessions: Dict[str, VoiceSession] = {}
         self.on_audio_output = on_audio_output
 
@@ -122,7 +115,6 @@ class VoiceOrchestrator:
         self.on_transcription: Optional[Callable] = None
         self.on_response: Optional[Callable] = None
         self.on_handoff: Optional[Callable] = None
-        self.on_translation: Optional[Callable] = None  # New callback for translations
 
     async def start_session(
         self,
@@ -317,13 +309,6 @@ class VoiceOrchestrator:
         if self.on_transcription:
             await self.on_transcription(session_id, transcript)
 
-        # Translate to Romanian and Hindi
-        translations = None
-        if self.enable_translation:
-            translations = await self._translate_text(transcript.text, detected_lang)
-            if self.on_translation:
-                await self.on_translation(session_id, translations)
-
         # Send to Rasa
         rasa_response = await self._send_to_rasa(
             session_id=session_id,
@@ -338,10 +323,8 @@ class VoiceOrchestrator:
 
         session.turn_count += 1
 
-        # Log user turn with translations (async, don't block)
+        # Log user turn (async, don't block)
         turn_metadata = {"confidence": transcript.confidence}
-        if translations:
-            turn_metadata["translations"] = translations
         asyncio.create_task(self._log_turn(
             session_id=session_id,
             role="user",
@@ -544,38 +527,6 @@ class VoiceOrchestrator:
             logger.error(f"Transcription error: {e}")
 
         return None
-
-    async def _translate_text(
-        self,
-        text: str,
-        source_language: str = "auto"
-    ) -> Dict[str, str]:
-        """Translate text to Romanian and Hindi.
-
-        Args:
-            text: Text to translate
-            source_language: Source language code
-
-        Returns:
-            Dict with 'original', 'romanian', and 'hindi' keys
-        """
-        if not self.translation_service or not text.strip():
-            return {"original": text, "romanian": None, "hindi": None}
-
-        try:
-            results = await self.translation_service.translate_to_romanian_and_hindi(
-                text, source_language
-            )
-            translations = {
-                "original": text,
-                "romanian": results["ro"].translated_text if "ro" in results else None,
-                "hindi": results["hi"].translated_text if "hi" in results else None,
-            }
-            logger.info(f"Translations - RO: '{translations['romanian']}', HI: '{translations['hindi']}'")
-            return translations
-        except Exception as e:
-            logger.error(f"Translation error: {e}")
-            return {"original": text, "romanian": None, "hindi": None}
 
     async def _send_to_rasa(
         self,

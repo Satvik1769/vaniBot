@@ -1,4 +1,6 @@
 """Swap and invoice service for database operations."""
+import logging
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from typing import List, Optional
@@ -14,7 +16,7 @@ PENALTY_DAILY_RATE = Decimal("80.00")  # Rs 80 per day
 async def get_swap_history(
     db: AsyncSession,
     phone_number: str,
-    time_period: str = "today",
+    time_period: str = "all",
     start_date: date = None,
     end_date: date = None,
     limit: int = 20
@@ -66,6 +68,7 @@ async def get_swap_history(
         "limit": limit
     })
     rows = result.fetchall()
+    logging.error(rows)
     swaps = [dict(row._mapping) for row in rows]
 
     # Calculate totals
