@@ -448,12 +448,20 @@ class VoiceOrchestrator:
         return False
 
     def _extract_response_text(self, rasa_response: Dict[str, Any]) -> str:
-        """Extract first response text from Rasa response (for voice, only use first)."""
+        """Extract and combine all response texts from Rasa response for voice."""
         responses = rasa_response.get("responses", [])
+        texts = []
         for r in responses:
             if "text" in r and r["text"].strip():
-                return r["text"]
-        return ""
+                texts.append(r["text"].strip())
+
+        if not texts:
+            return ""
+
+        # Combine all responses with a pause-friendly separator
+        combined = " ".join(texts)
+        logger.debug(f"Combined {len(texts)} responses into single TTS text")
+        return combined
 
     def get_session(self, session_id: str) -> Optional[VoiceSession]:
         """Get session by ID."""

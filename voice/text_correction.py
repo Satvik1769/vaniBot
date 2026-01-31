@@ -107,6 +107,7 @@ PHONETIC_ENGLISH_CORRECTIONS = {
     'cheka': 'check',
     'chek': 'check',
 
+    'riplesamenta':'replacement',
     # Show/Display
     'dikhaao': 'dikhao',
     'dikha': 'dikhao',

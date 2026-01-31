@@ -95,6 +95,23 @@ nlu:
     - where is the nearest station
     - nearest station batao
     - station kahan hai
+    - find nearest battery station
+    - find me nearest battery swap station
+    - mujhe nearest battery station dhundho
+    - nearest battery swap station
+    - battery swap station dhundho
+    - battery station kahan hai
+    - nearest swap station chahiye
+    - find battery station near me
+    - battery swap kahan hoga
+    - mujhe sabse paas wala station batao
+    - nazdeeki station dikhao
+    - paas ka station batao
+    - mere location ke paas station
+    - find the nearest dsk
+    - nearest dsk with batteries
+    - battery available kahan hai
+    - kahan pe battery milegi
 
 - intent: check_station_availability
   examples: |

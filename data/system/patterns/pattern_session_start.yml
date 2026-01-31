@@ -5,4 +5,8 @@ flows:
     nlu_trigger:
         - intent: session_start
     steps:
-      - action: utter_welcome
+      - id: "init_session"
+        action: action_session_start
+        next: "welcome"
+      - id: "welcome"
+        action: utter_welcome

@@ -48,14 +48,8 @@ responses:
         rephrase: true
 
   utter_nearest_stations:
-    - text: |
-        Aapke paas {station_count} stations hain:
-
-        {station_list}
-
-        Sabse nazdeeki {nearest_station_name} hai jahan {available_batteries} batteries available hain.
+    - text: "Sabse nazdeeki station {nearest_station_name} hai, jahan {available_batteries} batteries available hain. Directions ke liye Google Maps link aapke phone pe bhej diya jayega."
       metadata:
-        rephrase: true
         language: hi-en
 
   utter_ask_check_availability:

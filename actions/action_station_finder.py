@@ -1,10 +1,13 @@
 """Custom actions for station finder and availability."""
 from typing import Any, Dict, List, Text
+import logging
 import httpx
 from rasa_sdk import Action, Tracker
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.events import SlotSet
 from rasa_sdk.types import DomainDict
+
+logger = logging.getLogger(__name__)
 
 API_BASE_URL = "http://localhost:8000/api/v1"
 
@@ -26,10 +29,14 @@ class ActionFindNearestStations(Action):
         longitude = tracker.get_slot("user_longitude")
         phone_number = tracker.get_slot("driver_phone")
 
+        # Debug logging
+        logger.info(f"[StationFinder] Starting search - phone: {phone_number}, location: {location}, lat: {latitude}, lon: {longitude}")
+
         try:
             async with httpx.AsyncClient() as client:
                 # Priority 1: Use coordinates if available
                 if latitude and longitude:
+                    logger.info(f"[StationFinder] Using coordinates: {latitude}, {longitude}")
                     response = await client.get(
                         f"{API_BASE_URL}/stations/nearest",
                         params={
@@ -40,20 +47,23 @@ class ActionFindNearestStations(Action):
                     )
                 # Priority 2: Use phone number for geolocation lookup
                 elif phone_number:
+                    api_url = f"{API_BASE_URL}/stations/nearest-by-phone/{phone_number}"
+                    logger.info(f"[StationFinder] Calling API: {api_url}")
                     response = await client.get(
-                        f"{API_BASE_URL}/stations/nearest-by-phone/{phone_number}",
-                        params={"limit": 5, "min_batteries": 1}
+                        api_url,
+                        params={"limit": 1, "min_batteries": 1}
                     )
+                    logger.info(f"[StationFinder] API response status: {response.status_code}")
                 # Priority 3: Search by location name
                 elif location:
+                    logger.info(f"[StationFinder] Searching by location name: {location}")
                     response = await client.get(
                         f"{API_BASE_URL}/stations/search",
                         params={"q": location, "limit": 5}
                     )
                 else:
-                    dispatcher.utter_message(
-                        text="Kripya apna location batayein taaki main nearby stations dhundh sakun."
-                    )
+                    logger.warning("[StationFinder] No location data available - phone, lat/lon, location all empty")
+                    # Don't dispatch message - let flow handle asking for location
                     return []
 
                 if response.status_code == 200:

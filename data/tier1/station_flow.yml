@@ -10,13 +10,19 @@ flows:
 
     steps:
       - id: "start"
+        action: action_find_nearest_stations
+        next:
+          - if: slots.nearest_stations is not none
+            then: "show_stations"
+          - else: "ask_location"
+
+      - id: "ask_location"
         collect: user_location
-        description: Collect user's location
-        next: "find_stations"
-        ask_before_filling: true
+        description: Collect user's location if geolocation failed
+        next: "find_stations_with_location"
         utter: utter_ask_location
 
-      - id: "find_stations"
+      - id: "find_stations_with_location"
         action: action_find_nearest_stations
         next: "show_stations"
 

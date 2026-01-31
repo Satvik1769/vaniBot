@@ -1,10 +1,13 @@
 """Custom actions for session management and driver identification."""
 from typing import Any, Dict, List, Text
+import logging
 import httpx
 from rasa_sdk import Action, Tracker
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.events import SlotSet
 from rasa_sdk.types import DomainDict
+
+logger = logging.getLogger(__name__)
 
 API_BASE_URL = "http://localhost:8000/api/v1"
 
@@ -21,9 +24,12 @@ class ActionSessionStart(Action):
         tracker: Tracker,
         domain: DomainDict
     ) -> List[Dict[Text, Any]]:
-        # Get phone number from metadata (passed from Amazon Connect)
+        # Get phone number from metadata (passed from voice orchestrator)
         metadata = tracker.latest_message.get("metadata", {})
         phone_number = metadata.get("phone_number") or metadata.get("caller_id")
+
+        logger.info(f"[SessionStart] Metadata received: {metadata}")
+        logger.info(f"[SessionStart] Phone number extracted: {phone_number}")
 
         events = []
 
@@ -33,6 +39,7 @@ class ActionSessionStart(Action):
             if len(phone_number) > 10:
                 phone_number = phone_number[-10:]
 
+            logger.info(f"[SessionStart] Setting driver_phone slot to: {phone_number}")
             events.append(SlotSet("driver_phone", phone_number))
 
             # Try to identify driver

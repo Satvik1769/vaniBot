@@ -30,6 +30,8 @@ async def find_nearest_stations(
 
     Returns stations within max_distance_km, sorted by distance.
     """
+
+    print("get nearest stat ions called with:", request)
     stations = await station_service.get_nearest_stations(
         db=db,
         latitude=request.latitude,

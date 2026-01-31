@@ -1,11 +1,14 @@
 """Custom actions for DSK finder and leave management."""
 from typing import Any, Dict, List, Text
 from datetime import datetime, timedelta
+import logging
 import httpx
 from rasa_sdk import Action, Tracker
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.events import SlotSet
 from rasa_sdk.types import DomainDict
+
+logger = logging.getLogger(__name__)
 
 API_BASE_URL = "http://localhost:8000/api/v1"
 
@@ -26,14 +29,16 @@ class ActionFindNearestDSK(Action):
         service_type = tracker.get_slot("service_type")
         phone_number = tracker.get_slot("driver_phone")
 
+        logger.info(f"[DSKFinder] Starting search - phone: {phone_number}, location: {location}, service: {service_type}")
+
         try:
             async with httpx.AsyncClient() as client:
                 # Try phone-based geolocation first
                 if phone_number:
-                    response = await client.get(
-                        f"{API_BASE_URL}/stations/dsk/nearest-by-phone/{phone_number}",
-                        params={"limit": 3}
-                    )
+                    api_url = f"{API_BASE_URL}/stations/dsk/nearest-by-phone/{phone_number}"
+                    logger.info(f"[DSKFinder] Calling API: {api_url}")
+                    response = await client.get(api_url, params={"limit": 3})
+                    logger.info(f"[DSKFinder] API response status: {response.status_code}")
                 else:
                     params = {"limit": 3}
                     if location:

@@ -184,6 +184,12 @@ slots:
       - type: custom
     influence_conversation: false
 
+  pricing_list:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
   wants_renewal:
     type: categorical
     values:
@@ -465,6 +471,226 @@ slots:
 
   dsk_maps_url:
     type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  # ============================================
+  # RESPONSE TEMPLATE SLOTS
+  # ============================================
+  # These slots are used in response templates
+
+  # Swap & Invoice slots
+  swap_history_message:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  swap_list:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  invoice_explanation:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  invoice_breakdown:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  # Station slots
+  station_count:
+    type: float
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  station_list:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  station_name:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  nearest_station_name:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  available_batteries:
+    type: float
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  available_count:
+    type: float
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  availability_status:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  availability_message:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  # Subscription slots
+  subscription_message:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  plan_name:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  plan_status:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  plan_price:
+    type: float
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  days_remaining:
+    type: float
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  swaps_info:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  start_date:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  end_date:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  tax_amount:
+    type: float
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  validity_days:
+    type: float
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  # DSK slots
+  dsk_name:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  dsk_address:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  dsk_phone:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  dsk_hours:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  dsk_services:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  required_docs:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  process_steps:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  estimated_time:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  # Leave slots
+  leave_days:
+    type: float
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  leave_details:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  leave_status_message:
+    type: text
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  pending_count:
+    type: float
+    mappings:
+      - type: custom
+    influence_conversation: false
+
+  approved_count:
+    type: float
     mappings:
       - type: custom
     influence_conversation: false

@@ -35,7 +35,7 @@ class ActionFetchSwapHistory(Action):
             async with httpx.AsyncClient() as client:
                 response = await client.get(
                     f"{API_BASE_URL}/swaps/history/{phone_number}",
-                    params={"time_period": time_period, "limit": 10}
+                    params={"time_period": time_period, "limit": 1}
                 )
 
                 if response.status_code == 200:
