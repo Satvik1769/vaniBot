@@ -10,7 +10,7 @@ from rasa_sdk.types import DomainDict
 
 logger = logging.getLogger(__name__)
 
-API_BASE_URL = "http://localhost:8000/api/v1"
+API_BASE_URL = "http://34.218.254.232:8000/api/v1"
 
 
 class ActionFindNearestDSK(Action):

@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
 
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:1234@localhost:5432/postgres"
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:teslacodes7@postgres.cni28060guwj.us-west-2.rds.amazonaws.com:5432/postgres"
     DATABASE_POOL_SIZE: int = 10
     DATABASE_MAX_OVERFLOW: int = 20
 

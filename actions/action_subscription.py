@@ -6,7 +6,7 @@ from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.events import SlotSet
 from rasa_sdk.types import DomainDict
 
-API_BASE_URL = "http://localhost:8000/api/v1"
+API_BASE_URL = "http://34.218.254.232:8000/api/v1"
 
 
 class ActionCheckSubscription(Action):

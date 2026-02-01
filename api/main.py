@@ -149,7 +149,7 @@ async def twilio_voice_webhook(request: Request):
     called = form.get("To", "")
 
     # Build the WebSocket URL dynamically from the incoming request
-    host = request.headers.get("host", "localhost:8000")
+    host = request.headers.get("host", "34.218.254.232:8000")
     scheme = "wss" if request.url.scheme == "https" else "ws"
     ws_url = f"{scheme}://{host}/ws/twilio-stream"
 
@@ -404,7 +404,7 @@ async def make_outbound_call(
     status_callback: str = None,
 ):
     """Initiate an outbound call via Twilio."""
-    host = request.headers.get("host", "localhost:8000")
+    host = request.headers.get("host", "34.218.254.232:8000")
     scheme = "https" if request.url.scheme == "https" else "http"
     twiml_url = f"{scheme}://{host}/api/v1/twilio/voice"
 
