@@ -36,16 +36,35 @@ slots:
   # SWAP & INVOICE SLOTS
   # ============================================
   time_period:
-    type: categorical
-    values:
-      - today
-      - yesterday
-      - last_week
-      - last_month
-      - all
+    type: text
     mappings:
       - type: from_entity
         entity: time_period
+    influence_conversation: false
+
+  custom_start_date:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: date
+        role: start
+      - type: from_entity
+        entity: date
+    influence_conversation: false
+
+  custom_end_date:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: date
+        role: end
+    influence_conversation: false
+
+  num_days:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: number
     influence_conversation: false
 
   swap_history:

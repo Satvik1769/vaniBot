@@ -43,14 +43,24 @@ async def get_swap_history(
 async def get_swap_history_simple(
     phone_number: str,
     time_period: str = "all",
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
     limit: int = 20,
     db: AsyncSession = Depends(get_db)
 ):
-    """Get swap history with simple query parameters."""
+    """
+    Get swap history with simple query parameters.
+
+    Time periods: today, yesterday, last_week, last_month, this_week, this_month,
+                  last_year, this_year, all, or a number (e.g., "7" for last 7 days)
+    Or provide custom start_date and end_date (YYYY-MM-DD format).
+    """
     result = await swap_service.get_swap_history(
         db=db,
         phone_number=phone_number,
         time_period=time_period,
+        start_date=start_date,
+        end_date=end_date,
         limit=limit
     )
     return result
@@ -142,11 +152,16 @@ async def get_penalty_details(
 @router.post("/history/send-sms/{phone_number}")
 async def send_swap_history_sms(
     phone_number: str,
-    time_period: str = "today",
+    time_period: str = "all",
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
     db: AsyncSession = Depends(get_db)
 ):
     """
     Get swap history and send it via SMS to the user.
+
+    Time periods: today, yesterday, last_week, last_month, this_week, this_month,
+                  last_year, this_year, all, or a number (e.g., "7" for last 7 days)
     """
     from ..services.sms_service import send_swap_history_sms as sms_send
 
@@ -155,6 +170,8 @@ async def send_swap_history_sms(
         db=db,
         phone_number=phone_number,
         time_period=time_period,
+        start_date=start_date,
+        end_date=end_date,
         limit=10
     )
 

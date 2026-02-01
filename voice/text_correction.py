@@ -107,6 +107,11 @@ PHONETIC_ENGLISH_CORRECTIONS = {
     'cheka': 'check',
     'chek': 'check',
 
+    'steps' : 'swaps',
+    'svaraaja':'swap',
+    'slot':'swap',
+
+
     'riplesamenta':'replacement',
     # Show/Display
     'dikhaao': 'dikhao',
@@ -388,15 +393,30 @@ DOMAIN_CORRECTIONS: Dict[str, str] = {
     "batri smart": "Battery Smart",
     "battrey smart": "Battery Smart",
 
+    # Swap corrections (common STT mistakes)
+    "swords": "swaps",
+    "sword": "swap",
+    "swop": "swap",
+    "swops": "swaps",
+    "suap": "swap",
+    "suaps": "swaps",
+    "svap": "swap",
+    "svaps": "swaps",
+    "swab": "swap",
+    "swabs": "swaps",
+    "swap's": "swaps",
+
     "swap station": "swap station",
     "swapping station": "swap station",
     "swap stasan": "swap station",
     "swap steshan": "swap station",
     "swop station": "swap station",
+    "sword station": "swap station",
 
     "battery swap": "battery swap",
     "betri swap": "battery swap",
     "battery swop": "battery swap",
+    "battery sword": "battery swap",
 
     "charging station": "charging station",
     "chargin station": "charging station",
@@ -416,6 +436,17 @@ DOMAIN_CORRECTIONS: Dict[str, str] = {
     "nerest station": "nearest station",
     "neerest station": "nearest station",
     "near station": "nearest station",
+
+    # Time period corrections
+    "is maheene": "is mahine",
+    "is mahine": "is mahine",
+    "maheene": "mahine",
+    "maheena": "mahina",
+    "is hafte": "is hafte",
+    "is hafta": "is hafte",
+    "pichle saal": "pichle saal",
+    "pichhle saal": "pichle saal",
+    "is saal": "is saal",
 
     # Common Hindi/Hinglish
     "kaha hai": "kahan hai",
@@ -450,6 +481,29 @@ DOMAIN_CORRECTIONS: Dict[str, str] = {
     "aath": "8",
     "nau": "9",
     "das": "10",
+    "gyarah": "11",
+    "barah": "12",
+    "terah": "13",
+    "chaudah": "14",
+    "pandrah": "15",
+    "solah": "16",
+    "satrah": "17",
+    "athaarah": "18",
+    "unees": "19",
+    "bees": "20",
+    "ikkees": "21",
+    "baaees": "22",
+    "teyees": "23",
+    "chaubees": "24",
+    "pachchees": "25",
+    "chabbees": "26",
+    "sattaees": "27",
+    "atthaees": "28",
+    "untees": "29",
+    "tees": "30",
+    "ikatees": "31",
+    "ikatteesa": "31",
+    "battees": "32",
 }
 
 # Phonetically similar corrections for Hindi

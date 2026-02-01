@@ -1,7 +1,9 @@
 """Custom actions for swap history and invoice functionality."""
 import logging
+import re
+from datetime import date, datetime, timedelta
 from decimal import Decimal
-from typing import Any, Dict, List, Text
+from typing import Any, Dict, List, Optional, Text, Tuple
 import httpx
 from rasa_sdk import Action, Tracker
 from rasa_sdk.executor import CollectingDispatcher
@@ -12,6 +14,138 @@ logger = logging.getLogger(__name__)
 
 # API Base URL - configure via environment variable in production
 API_BASE_URL = "http://localhost:8000/api/v1"
+
+# Time period mapping for normalization
+TIME_PERIOD_MAP = {
+    # Hindi/Hinglish
+    "aaj": "today",
+    "abhi": "today",
+    "kal": "yesterday",
+    "pichhle hafte": "last_week",
+    "pichle hafte": "last_week",
+    "is hafte": "this_week",
+    "pichhle mahine": "last_month",
+    "pichle mahine": "last_month",
+    "is mahine": "this_month",
+    "mahine": "last_month",
+    "pichhle saal": "last_year",
+    "pichle saal": "last_year",
+    "is saal": "this_year",
+    "saare": "all",
+    "sab": "all",
+    "poore": "all",
+    # English
+    "today": "today",
+    "yesterday": "yesterday",
+    "last week": "last_week",
+    "this week": "this_week",
+    "last month": "last_month",
+    "this month": "this_month",
+    "last year": "last_year",
+    "this year": "this_year",
+    "all": "all",
+}
+
+
+MONTH_MAP = {
+    "january": 1, "jan": 1,
+    "february": 2, "feb": 2,
+    "march": 3, "mar": 3,
+    "april": 4, "apr": 4,
+    "may": 5,
+    "june": 6, "jun": 6,
+    "july": 7, "jul": 7,
+    "august": 8, "aug": 8,
+    "september": 9, "sep": 9,
+    "october": 10, "oct": 10,
+    "november": 11, "nov": 11,
+    "december": 12, "dec": 12,
+}
+
+
+def parse_date_entity(date_str: str) -> Optional[date]:
+    """Parse a date entity string like '31 december' or 'january 15' into a date object."""
+    if not date_str:
+        return None
+
+    date_str_lower = date_str.lower().strip()
+    today = date.today()
+
+    # Try "DD month" pattern (e.g., "31 december")
+    match = re.match(r'(\d{1,2})\s*([a-z]+)', date_str_lower)
+    if match:
+        day = int(match.group(1))
+        month_str = match.group(2)
+        if month_str in MONTH_MAP:
+            month = MONTH_MAP[month_str]
+            year = today.year
+            # If the date is in the future, use previous year
+            try:
+                result = date(year, month, day)
+                if result > today:
+                    result = date(year - 1, month, day)
+                return result
+            except ValueError:
+                return None
+
+    # Try "month DD" pattern (e.g., "december 31")
+    match = re.match(r'([a-z]+)\s*(\d{1,2})', date_str_lower)
+    if match:
+        month_str = match.group(1)
+        day = int(match.group(2))
+        if month_str in MONTH_MAP:
+            month = MONTH_MAP[month_str]
+            year = today.year
+            try:
+                result = date(year, month, day)
+                if result > today:
+                    result = date(year - 1, month, day)
+                return result
+            except ValueError:
+                return None
+
+    # Try just month name (e.g., "december") - return first day of that month
+    if date_str_lower in MONTH_MAP:
+        month = MONTH_MAP[date_str_lower]
+        year = today.year
+        if month > today.month:
+            year -= 1
+        return date(year, month, 1)
+
+    return None
+
+
+def parse_time_period(time_period: str) -> Tuple[str, Optional[date], Optional[date]]:
+    """Parse time period string and return normalized period with optional custom dates."""
+    if not time_period:
+        return "all", None, None
+
+    time_period_lower = time_period.lower().strip()
+
+    # Check direct mapping first
+    if time_period_lower in TIME_PERIOD_MAP:
+        return TIME_PERIOD_MAP[time_period_lower], None, None
+
+    # Handle "pichle N din" or "last N days" patterns
+    match = re.search(r'(?:pichle|last)\s*(\d+)\s*(?:din|days?)', time_period_lower)
+    if match:
+        days = int(match.group(1))
+        return str(days), None, None  # Service handles numeric time_period as days
+
+    # Handle "N din" pattern
+    match = re.search(r'^(\d+)\s*(?:din|days?)$', time_period_lower)
+    if match:
+        days = int(match.group(1))
+        return str(days), None, None
+
+    # Handle "pichle N hafte" or "last N weeks"
+    match = re.search(r'(?:pichle|last)\s*(\d+)\s*(?:hafte|weeks?)', time_period_lower)
+    if match:
+        weeks = int(match.group(1))
+        return str(weeks * 7), None, None
+
+    # If still not matched, return as-is (service will handle or default)
+    return time_period_lower, None, None
 
 
 class ActionFetchSwapHistory(Action):
@@ -27,7 +161,29 @@ class ActionFetchSwapHistory(Action):
         domain: DomainDict
     ) -> List[Dict[Text, Any]]:
         phone_number = tracker.get_slot("driver_phone")
-        time_period = tracker.get_slot("time_period") or "all"
+        raw_time_period = tracker.get_slot("time_period") or "all"
+        custom_start = tracker.get_slot("custom_start_date")
+        custom_end = tracker.get_slot("custom_end_date")
+
+        # Parse and normalize the time period
+        time_period, start_date, end_date = parse_time_period(raw_time_period)
+
+        # Parse custom date entities if available
+        if custom_start:
+            parsed_start = parse_date_entity(custom_start)
+            if parsed_start:
+                start_date = parsed_start
+                end_date = parsed_start  # Single day query
+                time_period = "custom"
+                logger.info(f"Parsed date entity '{custom_start}' -> {parsed_start}")
+
+        if custom_end:
+            parsed_end = parse_date_entity(custom_end)
+            if parsed_end:
+                end_date = parsed_end
+                time_period = "custom"
+
+        logger.info(f"Fetching swaps for {phone_number}, period={time_period}, start={start_date}, end={end_date}")
 
         if not phone_number:
             dispatcher.utter_message(
@@ -36,10 +192,16 @@ class ActionFetchSwapHistory(Action):
             return []
 
         try:
+            params = {"time_period": time_period, "limit": 10}
+            if start_date:
+                params["start_date"] = str(start_date)
+            if end_date:
+                params["end_date"] = str(end_date)
+
             async with httpx.AsyncClient() as client:
                 response = await client.get(
                     f"{API_BASE_URL}/swaps/history/{phone_number}",
-                    params={"time_period": time_period, "limit": 10}
+                    params=params
                 )
 
                 if response.status_code == 200:
@@ -96,7 +258,10 @@ class ActionFetchSwapHistoryWithSMS(Action):
         domain: DomainDict
     ) -> List[Dict[Text, Any]]:
         phone_number = tracker.get_slot("driver_phone")
-        time_period = tracker.get_slot("time_period") or "all"
+        raw_time_period = tracker.get_slot("time_period") or "all"
+
+        # Parse and normalize the time period
+        time_period, start_date, end_date = parse_time_period(raw_time_period)
 
         if not phone_number:
             dispatcher.utter_message(
@@ -105,10 +270,16 @@ class ActionFetchSwapHistoryWithSMS(Action):
             return []
 
         try:
+            params = {"time_period": time_period}
+            if start_date:
+                params["start_date"] = str(start_date)
+            if end_date:
+                params["end_date"] = str(end_date)
+
             async with httpx.AsyncClient() as client:
                 response = await client.post(
                     f"{API_BASE_URL}/swaps/history/send-sms/{phone_number}",
-                    params={"time_period": time_period}
+                    params=params
                 )
 
                 if response.status_code == 200:

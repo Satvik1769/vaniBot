@@ -14,14 +14,11 @@ flows:
 
       - id: "show_history"
         action: utter_swap_history
-        next: "ask_invoice"
-
-      - id: "ask_invoice"
-        action: utter_ask_invoice_clarification
         next: "wait_response"
 
       - id: "wait_response"
         collect: wants_invoice_detail
+        utter: utter_ask_wants_invoice_detail
         next:
           - if: slots.wants_invoice_detail == "yes"
             then: "explain_invoice"

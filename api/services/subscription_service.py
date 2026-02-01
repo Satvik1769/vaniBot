@@ -195,7 +195,7 @@ async def initiate_renewal(
     from .sms_service import send_payment_link_sms
 
     # Get driver
-    driver_query = text("SELECT id, name FROM drivers WHERE phone_number = :phone")
+    driver_query = text("SELECT id, driver_name FROM drivers WHERE phone_number = :phone")
     driver_result = await db.execute(driver_query, {"phone": phone_number})
     driver_row = driver_result.fetchone()
 

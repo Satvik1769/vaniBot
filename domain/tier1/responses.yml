@@ -9,8 +9,6 @@ responses:
         {swap_history_message}
 
         {swap_list}
-
-        Kya aap kisi invoice ke baare mein detail chahte hain?
       metadata:
         rephrase: true
         language: hi-en

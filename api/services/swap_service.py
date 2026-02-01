@@ -30,18 +30,43 @@ async def get_swap_history(
     elif time_period == "yesterday":
         start = today - timedelta(days=1)
         end = today - timedelta(days=1)
-    elif time_period == "last_week":
+    elif time_period == "last_3_days":
+        start = today - timedelta(days=3)
+        end = today
+    elif time_period == "last_week" or time_period == "last_7_days":
         start = today - timedelta(days=7)
         end = today
-    elif time_period == "last_month":
+    elif time_period == "this_week":
+        # Start from Monday of current week
+        start = today - timedelta(days=today.weekday())
+        end = today
+    elif time_period == "last_month" or time_period == "last_30_days":
         start = today - timedelta(days=30)
+        end = today
+    elif time_period == "this_month":
+        start = today.replace(day=1)
+        end = today
+    elif time_period == "last_year" or time_period == "last_365_days":
+        start = today - timedelta(days=365)
+        end = today
+    elif time_period == "this_year":
+        start = today.replace(month=1, day=1)
         end = today
     elif time_period == "all":
         start = date(2020, 1, 1)
         end = today
+    elif time_period == "custom" and start_date and end_date:
+        start = start_date
+        end = end_date
     else:
-        start = start_date or today
-        end = end_date or today
+        # If time_period is a number like "3" (for last N days), handle it
+        try:
+            days = int(time_period)
+            start = today - timedelta(days=days)
+            end = today
+        except (ValueError, TypeError):
+            start = start_date or today
+            end = end_date or today
 
     query = text("""
         SELECT

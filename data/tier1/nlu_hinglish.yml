@@ -45,6 +45,46 @@ nlu:
     - [last_week](time_period) ki swap history
     - [last_month](time_period) ke swaps
     - [pichhle mahine](time_period) ke swaps batao
+    - [last year](time_period) ke swaps
+    - [pichhle saal](time_period) ki swap history
+    - [is saal](time_period) ke swaps dikhao
+    - [this year](time_period) ke total swaps
+    - [this month](time_period) ke swaps
+    - [is mahine](time_period) kitne swap kiye
+    - [this week](time_period) ke swaps dikhao
+    - [is hafte](time_period) kitne swap hue
+    - [pichle 3 din](time_period) ke swaps
+    - [last 3 days](time_period) ki history
+    - [pichle 5 din](time_period) ke swaps batao
+    - [last 7 days](time_period) ke swaps
+    - [pichle 10 din](time_period) mein kitne swap
+    - [last 15 days](time_period) ki swap history
+    - [pichle 2 hafte](time_period) ke swaps
+    - [january](date) ke swaps dikhao
+    - [15 january](date) ko swap hua tha
+    - [1 feb](date) se [15 feb](date) ke swaps
+    - [pichle mahine](time_period) ki poori history
+    - [31 december](date) ko kitne swap hue
+    - [31 december](date) ko swap hua tha kya
+    - [30 january](date) ke swaps batao
+    - [25 december](date) ko swap history
+    - [1 january](date) se [31 january](date) tak ke swaps
+    - [december](date) mahine ke swaps
+    - [january](date) ke total swaps
+    - [february](date) mein kitne swap kiye
+    - [10 january](date) ko swap kiya tha
+    - [5 february](date) wale swaps dikhao
+    - aap batao sakte hain [31 jan](date) ko kitane swap hue the
+    - [31 jan](date) ko kitne swap hue the
+    - [31 january](date) ko kitne swap hue
+    - kya aap bata sakte hain [30 jan](date) ko swap hua tha
+    - [15 jan](date) wale din ke swaps
+    - [20 january](date) ko mere swaps batao
+    - mujhe [25 jan](date) ke swaps chahiye
+    - [1 jan](date) ko swap history dikhao
+    - batao [31 jan](date) ko kitne swap kiye
+    - [jan](date) ke swaps kitne hue
+    - [feb](date) mein total swaps
 
 - intent: explain_invoice
   examples: |
@@ -605,19 +645,104 @@ nlu:
     - yesterday
     - last_week
     - last_month
+    - last_year
+    - this_week
+    - this_month
+    - this_year
     - all
     - aaj
     - kal
     - abhi
     - pichhle hafte
+    - pichle hafte
     - last week
     - is hafte
+    - this week
     - pichhle mahine
+    - pichle mahine
     - last month
     - is mahine
+    - is maheene
+    - this month
     - mahine
+    - maheene
+    - pichhle saal
+    - pichle saal
+    - last year
+    - is saal
+    - this year
     - saare
     - sab
+    - pichle 3 din
+    - last 3 days
+    - pichle 5 din
+    - last 5 days
+    - pichle 7 din
+    - last 7 days
+    - pichle 10 din
+    - last 10 days
+    - pichle 15 din
+    - last 15 days
+    - pichle 2 hafte
+    - last 2 weeks
+
+# ============================================
+# REGEX PATTERNS FOR DATE EXTRACTION
+# ============================================
+- regex: date
+  examples: |
+    - \d{1,2}\s*(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)
+    - (january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)\s*\d{1,2}
+    - \d{1,2}/\d{1,2}/\d{2,4}
+    - \d{1,2}-\d{1,2}-\d{2,4}
+
+# ============================================
+# LOOKUP TABLE FOR MONTH NAMES AND DATE PATTERNS
+# ============================================
+- lookup: date
+  examples: |
+    - january
+    - february
+    - march
+    - april
+    - may
+    - june
+    - july
+    - august
+    - september
+    - october
+    - november
+    - december
+    - jan
+    - feb
+    - mar
+    - apr
+    - jun
+    - jul
+    - aug
+    - sep
+    - oct
+    - nov
+    - dec
+    - 1 jan
+    - 2 jan
+    - 3 jan
+    - 5 jan
+    - 10 jan
+    - 15 jan
+    - 20 jan
+    - 25 jan
+    - 30 jan
+    - 31 jan
+    - 1 january
+    - 15 january
+    - 31 january
+    - 1 feb
+    - 15 feb
+    - 28 feb
+    - 1 december
+    - 25 december
+    - 31 december
 
 # ============================================
 # ENTITIES SYNONYMS
@@ -644,8 +769,47 @@ nlu:
   examples: |
     - pichhle mahine
     - last month
-    - is mahine
+    - pichle mahine
     - mahine
+
+- synonym: this_month
+  examples: |
+    - is mahine
+    - is maheene
+    - this month
+    - current month
+
+- synonym: last_year
+  examples: |
+    - pichhle saal
+    - pichle saal
+    - last year
+    - pichhla saal
+
+- synonym: this_year
+  examples: |
+    - is saal
+    - this year
+    - current year
+
+- synonym: this_week
+  examples: |
+    - is hafte
+    - this week
+    - current week
+
+- synonym: last_3_days
+  examples: |
+    - pichle 3 din
+    - last 3 days
+    - teen din
+    - 3 din
+
+- synonym: last_7_days
+  examples: |
+    - pichle 7 din
+    - last 7 days
+    - saat din
 
 - synonym: all
   examples: |
