@@ -8,24 +8,25 @@ nlu:
   examples: |
     - mera swap history dikhao
     - swap history dekhni hai
-    - aaj kitne swap kiye maine
+    - [aaj](time_period) kitne swap kiye maine
     - meri swap ki list dikhao
-    - last week ke swaps
-    - kal ke swaps dikhao
+    - [last week](time_period) ke swaps
+    - [kal](time_period) ke swaps dikhao
     - show my swap history
     - swap record dekhna hai
     - kitne swap ho gaye
     - mere swaps check karo
-    - aaj ke swaps
-    - yesterday swaps
-    - pichhle hafte ke swaps
-    - mahine ke swaps dikhao
+    - [aaj](time_period) ke swaps
+    - [yesterday](time_period) swaps
+    - [pichhle hafte](time_period) ke swaps
+    - [mahine](time_period) ke swaps dikhao
     - swap count batao
     - total swaps kya hai
     - mera swap batao
     - swap details chahiye
     - recent swaps dikhao
     - saare swaps dekhne hain
+    - [all](time_period) swaps dikhao
     - swap history ke baare mein batao
     - swap history ke baare mein jaanna hai
     - mujhe swap history batao
@@ -40,6 +41,10 @@ nlu:
     - meri swap history bataiye
     - swap history check karna hai
     - meri swap history batao
+    - [today](time_period) ke swaps dikhao
+    - [last_week](time_period) ki swap history
+    - [last_month](time_period) ke swaps
+    - [pichhle mahine](time_period) ke swaps batao
 
 - intent: explain_invoice
   examples: |
@@ -592,6 +597,29 @@ nlu:
     - youtube kholo
 
 # ============================================
+# LOOKUP TABLE FOR TIME PERIOD ENTITY
+# ============================================
+- lookup: time_period
+  examples: |
+    - today
+    - yesterday
+    - last_week
+    - last_month
+    - all
+    - aaj
+    - kal
+    - abhi
+    - pichhle hafte
+    - last week
+    - is hafte
+    - pichhle mahine
+    - last month
+    - is mahine
+    - mahine
+    - saare
+    - sab
+
+# ============================================
 # ENTITIES SYNONYMS
 # ============================================
 - synonym: today
@@ -617,6 +645,16 @@ nlu:
     - pichhle mahine
     - last month
     - is mahine
+    - mahine
+
+- synonym: all
+  examples: |
+    - all
+    - saare
+    - sab
+    - poore
+    - total
+    - complete
 
 - synonym: daily
   examples: |

@@ -1,10 +1,14 @@
 """Custom actions for swap history and invoice functionality."""
+import logging
+from decimal import Decimal
 from typing import Any, Dict, List, Text
 import httpx
 from rasa_sdk import Action, Tracker
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.events import SlotSet
 from rasa_sdk.types import DomainDict
+
+logger = logging.getLogger(__name__)
 
 # API Base URL - configure via environment variable in production
 API_BASE_URL = "http://localhost:8000/api/v1"
@@ -23,7 +27,7 @@ class ActionFetchSwapHistory(Action):
         domain: DomainDict
     ) -> List[Dict[Text, Any]]:
         phone_number = tracker.get_slot("driver_phone")
-        time_period = tracker.get_slot("time_period") or "today"
+        time_period = tracker.get_slot("time_period") or "all"
 
         if not phone_number:
             dispatcher.utter_message(
@@ -35,7 +39,7 @@ class ActionFetchSwapHistory(Action):
             async with httpx.AsyncClient() as client:
                 response = await client.get(
                     f"{API_BASE_URL}/swaps/history/{phone_number}",
-                    params={"time_period": time_period, "limit": 1}
+                    params={"time_period": time_period, "limit": 10}
                 )
 
                 if response.status_code == 200:
@@ -45,10 +49,17 @@ class ActionFetchSwapHistory(Action):
                     # Format swap list for display
                     swap_list_text = ""
                     for i, swap in enumerate(swaps[:5], 1):
-                        time_str = swap.get("swap_time", "")[:16].replace("T", " ")
-                        station = swap.get("station_name", "Unknown")
-                        amount = swap.get("charge_amount", 0)
-                        if amount > 0:
+                        swap_time = swap.get("swap_time") or ""
+                        time_str = str(swap_time)[:16].replace("T", " ") if swap_time else "Unknown time"
+                        station = swap.get("station_name") or "Unknown"
+                        amount = swap.get("charge_amount") or 0
+                        # Convert to float for comparison (handles Decimal/string)
+                        try:
+                            amount_float = float(amount)
+                        except (ValueError, TypeError):
+                            amount_float = 0
+
+                        if amount_float > 0:
                             swap_list_text += f"{i}. {time_str} - {station} - ₹{amount}\n"
                         else:
                             swap_list_text += f"{i}. {time_str} - {station} - Free (subscription)\n"
@@ -65,6 +76,7 @@ class ActionFetchSwapHistory(Action):
                     return []
 
         except Exception as e:
+            logger.exception(f"Error fetching swap history: {e}")
             dispatcher.utter_message(
                 text="Technical issue hui hai. Kripya thodi der baad try karein."
             )
@@ -84,7 +96,7 @@ class ActionFetchSwapHistoryWithSMS(Action):
         domain: DomainDict
     ) -> List[Dict[Text, Any]]:
         phone_number = tracker.get_slot("driver_phone")
-        time_period = tracker.get_slot("time_period") or "today"
+        time_period = tracker.get_slot("time_period") or "all"
 
         if not phone_number:
             dispatcher.utter_message(
@@ -124,6 +136,7 @@ class ActionFetchSwapHistoryWithSMS(Action):
                     return []
 
         except Exception as e:
+            logger.exception(f"Error fetching swap history with SMS: {e}")
             dispatcher.utter_message(
                 text="Technical issue hui hai. Kripya thodi der baad try karein."
             )
@@ -199,6 +212,7 @@ class ActionExplainInvoice(Action):
                     return []
 
         except Exception as e:
+            logger.exception(f"Error explaining invoice: {e}")
             dispatcher.utter_message(
                 text="Technical issue hui hai. Kripya thodi der baad try karein."
             )
@@ -248,6 +262,7 @@ class ActionCheckPenalty(Action):
                     ]
 
         except Exception as e:
+            logger.exception(f"Error checking penalty: {e}")
             dispatcher.utter_message(
                 text="Technical issue hui hai."
             )
