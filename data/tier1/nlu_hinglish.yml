@@ -85,6 +85,65 @@ nlu:
     - batao [31 jan](date) ko kitne swap kiye
     - [jan](date) ke swaps kitne hue
     - [feb](date) mein total swaps
+    - bhai kitne baar battery swap kiya maine
+    - mera total swap count kya hai
+    - mere past swaps dekho
+    - pichla record dikhana hai
+    - swapping ka record check karo
+    - [subah](time_period) kitne swap hue
+    - [shaam](time_period) ke swaps
+    - battery change ka history
+    - jitne bhi swap kiye hain wo dikhao
+    - purane swaps dekhne hain
+    - kab kab swap kiya maine
+    - swap kab kab hua
+    - swapping ki list
+    - battery badalne ka record
+    - kitni baar battery change ki
+    - [aaj subah](time_period) swap kiya tha
+    - [kal raat](time_period) ka swap
+    - mera swapping pattern dikhao
+    - swap frequency kya hai meri
+    - average kitne swap hote hain
+    - monthly average swaps
+    - swaps ka trend dikhao
+    - last few swaps dekho
+    - hamara swap data
+    - battery badalne ki frequency
+    - kitni frequently swap karta hoon
+    - swap karne ka pattern
+    - display my battery swap history
+    - I want to see my swaps
+    - could you show me my past swaps
+    - what swaps have I done
+    - give me my swap records
+    - I need to check my battery swap history
+    - how many times have I swapped
+    - what's my swap count
+    - show me all my swaps
+    - list my battery swaps
+    - display swap transactions
+    - swap activity log
+    - battery replacement history
+    - how many batteries have I changed
+    - my battery swap details
+    - fetch my swap data
+    - retrieve swap information
+    - access my swap records
+    - view battery change log
+    - historical swap data
+    - past month swaps
+    - swaps from last week
+    - recent battery swaps
+    - latest swap activity
+    - yesterday's swaps
+    - today's battery changes
+    - current month swap history
+    - year to date swaps
+    - quarterly swap report
+    - annual swap summary
+    - lifetime swap count
+    - total swaps till date
 
 - intent: explain_invoice
   examples: |
@@ -116,6 +175,42 @@ nlu:
     - service charge kya hai
     - swap price kya hai
     - itna charge kyun hua
+    - explain this invoice
+    - what is this charge for
+    - why was I charged
+    - invoice details please
+    - break down the bill
+    - what does this amount mean
+    - clarify the charges
+    - why this extra charge
+    - explain the bill
+    - invoice number details
+    - what are these charges
+    - why did you deduct money
+    - payment explanation needed
+    - billing details
+    - charge breakdown
+    - itemized bill
+    - what's included in invoice
+    - why 35 rupees charged
+    - what is service charge
+    - leave penalty explanation
+    - swap price details
+    - extra fees why
+    - additional charges
+    - hidden costs
+    - unexpected charge
+    - invoice clarification
+    - bill explanation
+    - payment summary
+    - transaction details
+    - deduction reason
+    - why this debit
+    - account statement
+    - billing information
+    - cost analysis
+    - price justification
+    - charge validation
 
 - intent: ask_pricing
   examples: |
@@ -132,6 +227,24 @@ nlu:
     - pricing information
     - rate card batao
     - swap ka rate batao
+    - what's the swap cost
+    - how much per swap
+    - single swap price
+    - one swap charge
+    - battery swap fee
+    - swap pricing
+    - cost per battery change
+    - charge for one swap
+    - price for swap
+    - swap rate information
+    - what do you charge
+    - fees and charges
+    - price details
+    - rate information
+    - cost structure
+    - pricing model
+    - charge sheet
+    - fee schedule
 
 - intent: ask_leave_penalty
   examples: |
@@ -149,6 +262,30 @@ nlu:
     - how many leave days
     - meri leave penalty kitni hai
     - mera leave status kya hai
+    - what is leave penalty
+    - how much penalty for absence
+    - charge for taking leave
+    - cost of absence
+    - leave penalty amount
+    - deduction for leave
+    - absence charges
+    - off day penalty
+    - holiday penalty
+    - leave policy details
+    - absence policy
+    - penalty structure
+    - how many free leaves
+    - allowed leave days
+    - leave allowance
+    - leave quota per month
+    - leave entitlement
+    - penalty per day
+    - daily absence charge
+    - leave deduction rate
+    - what's my leave penalty
+    - check my penalty
+    - absence charges for me
+    - my leave deductions
 
 - intent: ask_service_charge
   examples: |
@@ -159,6 +296,25 @@ nlu:
     - 40 rupaye kiske liye
     - what is service charge
     - why service charge
+    - what is service charge
+    - explain service charge
+    - why am I charged for service
+    - service fee details
+    - what's the service fee
+    - service charge amount
+    - how much is service charge
+    - why service fee
+    - reason for service charge
+    - service charge explanation
+    - vehicle service charge
+    - maintenance charge
+    - service cost
+    - servicing fee
+    - what does service charge cover
+    - is service charge mandatory
+    - can I avoid service charge
+    - service charge breakdown
+    - 40 rupees for what service
 
 # ============================================
 # USE CASE 2: Station Finder & Availability
@@ -209,6 +365,84 @@ nlu:
     - battery available kahan hai
     - kahan pe battery milegi
     - sabse jyada paas konsa station hai
+    - bhai yahan se paas mein koi station hai kya
+    - bhai mere ghar ke paas station dikhao
+    - area mein station hai kya
+    - location pe station batao
+    - yahaan se kitni door hai station
+    - station kitna door hai
+    - station ka raasta batao
+    - station jaane ke liye kya karna hoga
+    - kaise pohonchun station pe
+    - map pe station dikhao
+    - google maps pe location send karo
+    - address bhejo station ka
+    - kahan jaana padega
+    - kidhar hai swap station
+    - bata do kahan hai
+    - yahan se kaunsa station nazdeek hai
+    - aas paas ka swap point
+    - yahan ke aas paas battery swap ho sakta hai
+    - battery le sakte hain kahan se
+    - mere yahaan battery kahan milegi
+    - yahan battery kahan se lun
+    - [Connaught Place](location) ke paas station
+    - [Karol Bagh](location) mein koi station
+    - [Saket](location) station hai kya
+    - [Vasant Kunj](location) ka station
+    - [Janakpuri](location) swap station
+    - [Tilak Nagar](location) battery station
+    - office ke paas station dikhao
+    - ghar ke paas station chahiye
+    - kaam karne ke raaste mein station
+    - aaj kahan swap kar sakta hoon
+    - abhi turant swap karna hai kahan jaaun
+    - emergency mein kahan jaun
+    - battery low hai kahan jaaun
+    - battery khatam ho gayi paas mein koi station
+    - jaldi battery chahiye kahan milegi
+    - urgent swap chahiye location batao
+    - naya station khula hai kya
+    - 24 hour station kahan hai
+    - raat ko khulne wala station
+    - late night swap kahan hoga
+    - subah jaldi swap karne ke liye
+    - weekend pe kaunsa station khula rehta hai
+    - where can I find the nearest battery swap station
+    - locate the closest station to me
+    - I need to find a nearby swap station
+    - which station is closest to my location
+    - show me nearby battery stations
+    - help me find a swap station
+    - where's the nearest battery swap point
+    - I'm looking for a station near me
+    - can you find stations in my area
+    - search for battery swap locations
+    - stations within 5 km
+    - closest battery swap facility
+    - nearest charging station
+    - locate battery swap center
+    - where do I go to swap my battery
+    - station finder
+    - battery swap locations nearby
+    - map of nearby stations
+    - directions to nearest station
+    - how do I get to the station
+    - station address please
+    - what's the closest swap point
+    - find swap station in Delhi
+    - battery stations in my city
+    - show all stations near me
+    - which station should I go to
+    - recommend a nearby station
+    - suggest closest swap location
+    - battery swap facilities around me
+    - where can I exchange battery
+    - swap center locator
+    - station availability near me
+    - open stations nearby
+    - 24 hour swap stations
+    - late night swap location
 
 - intent: check_station_availability
   examples: |
@@ -242,6 +476,80 @@ nlu:
     - battery inventory check karo
     - station full hai kya
     - empty slots hain kya
+    - bhai battery milegi ya nahi
+    - charged battery ready hai kya
+    - full charge battery hai
+    - battery stock khatam toh nahi ho gaya
+    - station pe abhi battery padi hai ki nahi
+    - kitni der mein battery milegi
+    - wait karna padega kya
+    - line lagi hui hai kya
+    - crowd hai kya station pe
+    - busy hai kya
+    - kitne log wait kar rahe hain
+    - queue length kya hai
+    - waiting time kitna hoga
+    - jaldi mil jayegi battery
+    - abhi jaun toh milegi
+    - immediately swap ho sakta hai
+    - turant battery mil jayegi kya
+    - station operational hai
+    - khula hai kya abhi
+    - close toh nahi ho gaya
+    - timings kya hai
+    - kab tak khula hai
+    - kab khulta hai station
+    - kab band hota hai
+    - 24 ghante khula rehta hai kya
+    - raat ko bhi milti hai battery
+    - late night swap ho sakta hai
+    - subah kitne baje se khulta hai
+    - live status dikhao
+    - real time data do
+    - current availability
+    - abhi ka stock level
+    - updated stock batao
+    - fresh data chahiye
+    - latest availability
+    - [Mayur Vihar](station_name) mein battery stock
+    - [Saket](station_name) ka availability
+    - [Karol Bagh](station_name) pe stock check karo
+    - are batteries available at the station
+    - check battery stock at nearest station
+    - is the station open right now
+    - how many batteries are available
+    - can I swap my battery now
+    - is there battery in stock
+    - check real time availability
+    - battery inventory status
+    - are charged batteries available
+    - station capacity check
+    - how long is the wait time
+    - is the station crowded
+    - queue length at station
+    - will I get battery immediately
+    - instant swap possible
+    - can I come to station now
+    - is swap possible right now
+    - station operational status
+    - check if station is functioning
+    - battery stock level
+    - current inventory
+    - live stock update
+    - fresh availability data
+    - updated battery count
+    - how many batteries in stock
+    - charged battery ready
+    - full charge batteries available
+    - empty slot available
+    - can I book a slot
+    - station timings
+    - what time does station open
+    - closing time of station
+    - 24 hour operation
+    - late night swap available
+    - early morning swap
+    - weekend availability
 
 # ============================================
 # USE CASE 3: Subscription & Pricing
@@ -283,6 +591,87 @@ nlu:
     - plan end date kya hai
     - subscription kab khatam hoga
     - mera plan dekhao sirf
+    - bhai mera plan active hai ya nahi
+    - subscription chal raha hai kya
+    - plan ka status kya hai
+    - mere paas kaunsa plan hai
+    - kis plan mein hoon main
+    - plan type kya hai mera
+    - monthly plan hai kya weekly hai
+    - kab tak valid rahega plan
+    - kitne time tak chal sakta hai
+    - plan finish hone mein kitne din
+    - expiry kab aayegi
+    - kab tak use kar sakta hoon
+    - validity kab khatam ho rahi hai
+    - subscription renew karna padega kya
+    - renew karna hoga kab
+    - kitna balance bacha hai
+    - aur kitne swaps kar sakta hoon
+    - swap limit kya hai
+    - kitni battery aur swap kar sakta hoon
+    - quota kya hai mera
+    - monthly limit kya hai
+    - daily limit kya hai
+    - maximum swaps kitne ho sakte hain
+    - unlimited plan hai kya
+    - free swaps kitne milte hain
+    - paid swaps kitne hain
+    - additional swap charges
+    - plan mein kya kya include hai
+    - plan features kya hain
+    - benefits kya milte hain
+    - plan advantages batao
+    - kya kya facility milti hai
+    - mere plan ki details puri batao
+    - plan ka pura information
+    - full subscription details
+    - account status check karo
+    - payment status kya hai
+    - bill clear hai kya
+    - due payment hai kya
+    - pending amount kitna hai
+    - balance kitna hai account mein
+    - credit balance check karo
+    - wallet balance dekhao
+    - khata balance batao
+    - account credit kya hai
+    - check my subscription status
+    - what's my current plan
+    - show me my plan details
+    - when does my plan expire
+    - how many days left in my subscription
+    - is my plan still active
+    - subscription expiry date
+    - remaining validity of my plan
+    - what subscription do I have
+    - tell me about my plan
+    - check plan validity
+    - how long is my subscription valid
+    - when will my plan end
+    - subscription information
+    - display my account details
+    - what are my plan benefits
+    - how many swaps do I have left
+    - remaining swap quota
+    - check my swap balance
+    - what's included in my plan
+    - plan features and benefits
+    - subscription type I'm on
+    - am I on monthly or weekly plan
+    - verify my subscription
+    - confirm plan status
+    - is my account active
+    - check account balance
+    - wallet balance inquiry
+    - credit remaining
+    - payment due amount
+    - outstanding balance
+    - subscription renewal date
+    - auto renewal status
+    - when to renew subscription
+    - plan upgrade options
+    - can I change my plan
 
 - intent: renew_subscription
   examples: |
@@ -319,6 +708,106 @@ nlu:
     - plan upgrade karna chahta hoon
     - better plan lena hai
     - plan switch karna hai
+    - bhai plan khatam ho gaya renew karna hai
+    - subscription expire ho gayi dobara leni hai
+    - plan khatam hone wala hai extend karo
+    - validity badhani hai
+    - aur time chahiye plan ka
+    - plan ki validity badha do
+    - ek mahine aur extend karo
+    - thoda aur time de do
+    - plan continue rakho
+    - same plan phir se le lo
+    - wahi plan dobara activate karo
+    - purana plan hi chahiye
+    - existing plan renew kar do
+    - auto renew kar do
+    - automatic renewal chahiye
+    - har mahine apne aap renew ho jaye
+    - monthly auto debit set karo
+    - recurring payment setup
+    - standing instruction de do
+    - recharge automatically ho jaye
+    - payment method save kar lo
+    - card save karke auto pay
+    - wallet se auto deduct
+    - UPI auto pay lagao
+    - plan upgrade to premium
+    - premium membership leni hai
+    - vip plan activate karo
+    - pro version chahiye
+    - advanced features ke liye upgrade
+    - better plan switch karna hai
+    - downgrade bhi kar sakte hain kya
+    - basic plan pe aa sakta hoon
+    - cheaper plan shift karna hai
+    - lower plan lena chahta hoon
+    - plan change kaise karte hain
+    - different plan select karna hai
+    - alternate option try karna hai
+    - trial period milta hai kya
+    - test karna chahta hoon pehle
+    - demo plan hai kya
+    - free trial available hai
+    - payment kaise karu
+    - online payment kar sakte hain
+    - cash payment hoga kya
+    - kaunse payment methods hain
+    - credit card se pay
+    - debit card lega kya
+    - netbanking se payment
+    - UPI se bhej sakte hain
+    - paytm chalega
+    - phonepe se payment
+    - gpay acceptable hai
+    - razorpay payment gateway
+    - I want to renew my subscription
+    - extend my plan
+    - recharge my account
+    - buy a new plan
+    - purchase subscription
+    - activate my plan
+    - need to renew before expiry
+    - subscription expired need to renew
+    - continue my current plan
+    - same plan again
+    - keep my plan active
+    - auto renew my subscription
+    - set up automatic renewal
+    - enable auto pay
+    - recurring payment setup
+    - upgrade to premium plan
+    - switch to better plan
+    - change my subscription
+    - downgrade my plan
+    - try different plan
+    - monthly plan purchase
+    - weekly subscription needed
+    - daily plan activation
+    - yearly membership
+    - annual subscription
+    - lifetime plan available
+    - upgrade to unlimited
+    - premium features access
+    - pro version needed
+    - how to renew subscription
+    - renewal process
+    - payment methods accepted
+    - can I pay online
+    - credit card payment
+    - debit card accepted
+    - UPI payment option
+    - net banking available
+    - Paytm wallet
+    - PhonePe payment
+    - Google Pay accepted
+    - any discounts available
+    - promo code
+    - coupon code apply
+    - first time user offer
+    - referral discount
+    - loyalty benefits
+    - trial period available
 
 - intent: explain_pricing
   examples: |
@@ -353,6 +842,109 @@ nlu:
     - ek swap ka kitna paisa lagta hai
     - pricing structure samjhao
     - tariff kya hai
+    - bhai kitne paise mein milta hai
+    - total cost kitni aayegi
+    - pura expense kya hoga
+    - kitna kharch aayega
+    - budget kitna chahiye
+    - kharcha kitna aata hai
+    - investment kitni hogi
+    - monthly cost kya hai
+    - per month kitna lagta hai
+    - daily cost kya aata hai
+    - weekly mein kitna paisa
+    - yearly plan ka price
+    - annual subscription kitne ka
+    - lifetime plan hai kya
+    - one time payment hai kya
+    - emi option hai kya
+    - installment mein de sakte hain kya
+    - discount milta hai kya
+    - offer chal raha hai kya
+    - sale hai kya
+    - coupon code hai kya
+    - promo code apply kar sakte hain
+    - referral discount
+    - first time user discount
+    - student discount hai kya
+    - senior citizen concession
+    - bulk discount milta hai
+    - loyalty discount hai
+    - gst extra lagta hai kya
+    - tax included hai kya
+    - hidden charges hain kya
+    - extra cost kya hoga
+    - additional fees kya hain
+    - registration charges
+    - activation fee kitna hai
+    - security deposit lagta hai
+    - refundable amount hai kya
+    - sabse economical option
+    - value for money plan
+    - budget friendly option
+    - affordable plan batao
+    - costly plan kaunsa hai
+    - premium plan price
+    - luxury plan kitne ka
+    - basic plan ka rate
+    - standard plan cost
+    - advanced plan pricing
+    - plans ki comparison chart
+    - difference in plans
+    - kya extra milega expensive plan mein
+    - cheap plan mein kya nahi milega
+    - what are the prices
+    - tell me the pricing
+    - how much does it cost
+    - price list please
+    - subscription rates
+    - what's the cost
+    - pricing information
+    - rate card
+    - charges details
+    - how much for monthly plan
+    - weekly plan cost
+    - daily plan price
+    - yearly subscription fee
+    - all plans pricing
+    - compare plan prices
+    - what's the cheapest option
+    - most affordable plan
+    - budget friendly plan
+    - economical option
+    - best value for money
+    - premium plan cost
+    - basic plan price
+    - standard plan rate
+    - advanced plan pricing
+    - unlimited plan fee
+    - per swap charge
+    - swap rate
+    - additional swap cost
+    - extra charges
+    - hidden fees
+    - total expense
+    - complete cost
+    - pricing structure
+    - cost breakdown
+    - fee schedule
+    - tariff details
+    - payment plans
+    - installment options
+    - EMI available
+    - discount offers
+    - promotional pricing
+    - special rates
+    - current offers
+    - seasonal discounts
+    - coupon codes
+    - referral benefits
+    - loyalty rewards
+    - bulk purchase discount
+    - GST inclusive
+    - tax details
+    - refund policy
+    - cancellation charges
 
 # ============================================
 # USE CASE 4: Leave & DSK
@@ -390,6 +982,104 @@ nlu:
     - mujhe [ek hafta](leave_duration) ki chutti chahiye
     - sick leave lena hai
     - emergency leave chahiye
+    - bhai [aaj](leave_date) off lena hai
+    - [kal](leave_date) kaam pe nahi aa paunga
+    - [aaj](leave_date) ghar par rehna hai
+    - tabiyat theek nahi hai chutti chahiye
+    - bimar hoon leave lena hai
+    - health issue hai rest karna hai
+    - doctor ke paas jaana hai
+    - medical emergency hai
+    - hospital jaana padega
+    - check up ke liye time chahiye
+    - personal reason se chutti
+    - family emergency hai
+    - ghar pe kaam hai urgent
+    - shaadi attend karni hai
+    - function hai chutti chahiye
+    - ceremony mein jaana hai
+    - occasion hai family ka
+    - relatives aa rahe hain
+    - out of station jaana hai
+    - tour pe jaa raha hoon
+    - travel karna hai
+    - trip plan hai
+    - vacation pe jaana hai
+    - ghumne jana hai
+    - [ek mahina](leave_duration) ki chutti
+    - [do hafte](leave_duration) ka break
+    - [paanch din](leave_duration) off
+    - [agle mahine](leave_date) leave
+    - [15 tarikh](leave_date) se chutti
+    - [monday se friday](leave_date) tak off
+    - [pura hafta](leave_duration) chutti chahiye
+    - continuous leave chahiye
+    - lagatar [3 din](leave_duration) off
+    - half day leave mil sakti hai
+    - adha din ki chutti
+    - 2 ghante ka leave
+    - short leave chahiye
+    - thodi der ke liye jaana hai
+    - casual leave lena hai
+    - earned leave use karna hai
+    - compensatory off lena hai
+    - comp off apply karo
+    - privilege leave chahiye
+    - annual leave lena hai
+    - maternity leave
+    - paternity leave
+    - bereavement leave
+    - mourning leave
+    - unpaid leave bhi chalega
+    - without pay leave
+    - loss of pay acceptable hai
+    - I need to apply for leave
+    - request time off
+    - take a day off tomorrow
+    - need leave for 3 days
+    - apply for vacation
+    - submit leave application
+    - I want to take leave
+    - off for next week
+    - holiday request
+    - absent tomorrow
+    - won't be coming to work
+    - need a break
+    - time off required
+    - leave from Monday
+    - sick leave needed
+    - not feeling well need leave
+    - medical leave application
+    - emergency leave required
+    - family emergency
+    - personal leave needed
+    - casual leave request
+    - planned leave
+    - vacation days
+    - annual leave
+    - earned leave
+    - compensatory off
+    - comp off request
+    - half day leave
+    - short leave needed
+    - few hours off
+    - late coming request
+    - early leaving
+    - work from home
+    - remote work option
+    - unpaid leave acceptable
+    - without pay leave
+    - maternity leave
+    - paternity leave
+    - bereavement leave
+    - funeral leave
+    - wedding leave
+    - attending ceremony
+    - out of station
+    - traveling
+    - on tour
+    - business trip
+    - personal trip
 
 - intent: find_nearest_dsk
   examples: |
@@ -428,6 +1118,28 @@ nlu:
     - dsk ke baare mein bata sakte hain
     - dsk batao please
     - sabse paas konsa dsk hai
+    - where is the DSK location
+    - find dealer service kiosk
+    - nearest service center
+    - where can I get support
+    - activation center location
+    - registration office
+    - account opening center
+    - where to signup
+    - new account creation location
+    - help desk location
+    - customer support center
+    - service point near me
+    - dealer location
+    - authorized service center
+    - battery replacement center
+    - repair center location
+    - technical support location
+    - DSK in my area
+    - closest DSK
+    - DSK finder
+    - locate DSK
+    - service kiosk near me
 
 - intent: check_leave_status
   examples: |
@@ -461,6 +1173,40 @@ nlu:
     - meri chutti reject toh nahi hui
     - leave request accepted hai kya
     - manager ne approve kiya kya
+    - check my leave status
+    - has my leave been approved
+    - is my leave request accepted
+    - leave application status
+    - what's my leave status
+    - pending leave check
+    - approved leaves
+    - rejected leaves
+    - leave request update
+    - holiday approval status
+    - time off approval
+    - is my absence approved
+    - leave balance inquiry
+    - how many leaves remaining
+    - available leave days
+    - leave quota left
+    - unused leave days
+    - carried forward leaves
+    - accrued leave balance
+    - leave history
+    - past leave records
+    - upcoming leaves
+    - scheduled time off
+    - future leave plans
+    - leave calendar
+    - absence record
+    - leave tracking
+    - time off tracking
+    - leave management
+    - supervisor approval status
+    - manager's decision
+    - HR approval
+    - leave sanctioned
+    - leave granted
 
 # ============================================
 # COMMON INTENTS
@@ -497,6 +1243,78 @@ nlu:
     - sab theek
     - namaste ji
     - namaskar ji
+    - bhai suno
+    - arre suno toh
+    - haan bhai
+    - kya baat hai
+    - bolo bhai
+    - suniye
+    - ji suniye
+    - haan suniye
+    - boliye ji
+    - kya haal
+    - theek ho
+    - kaisa chal raha hai
+    - sab badhiya
+    - kya ho raha hai
+    - wassup
+    - sup
+    - yo
+    - yaar
+    - dost
+    - bhai sahab
+    - ji haan boliye
+    - hukum
+    - haan ji kya baat hai
+    - bataiye
+    - kahiye
+    - sunna hai
+    - sunn bhai
+    - accha bhai
+    - haan achha
+    - hnji
+    - adaab
+    - assalamu alaikum
+    - ram ram
+    - jai hind
+    - vanakkam
+    - howdy
+    - greetings
+    - salutations
+    - radhe radhe
+    - jai shree krishna
+    - om namah shivay
+    - hello kya
+    - hey there
+    - hi how are you
+    - good day
+    - greetings
+    - hello there
+    - hi hello
+    - hey hey
+    - what's up
+    - howdy
+    - sup
+    - yo
+    - hiya
+    - hey buddy
+    - hello friend
+    - hi mate
+    - good to see you
+    - nice to meet you
+    - pleased to meet you
+    - how do you do
+    - how are things
+    - how's it going
+    - what's happening
+    - how have you been
+    - long time
+    - it's been a while
+    - nice talking to you
+    - glad to connect
+    - happy to chat
+    - thanks for picking up
+    - appreciate your time
 
 - intent: goodbye
   examples: |
@@ -530,6 +1348,122 @@ nlu:
     - good night
     - shubh ratri
     - chalo theek hai
+    - bhai bye
+    - chalo phir
+    - fir milte hain
+    - acha chalo
+    - thik hai fir
+    - bas itna hi
+    - hogaya kaam
+    - hogaya bhai
+    - ho gaya mere liye
+    - bas ab bye
+    - enough
+    - done talking
+    - conversation khatam
+    - baat khatam
+    - bas karo ab
+    - samajh gaya
+    - mil gaya answer
+    - information mil gayi
+    - clear ho gaya
+    - theek se samajh aa gaya
+    - sab pata chal gaya
+    - doubt clear ho gaya
+    - confusion dur ho gayi
+    - help mil gayi
+    - kaam ban gaya
+    - problem solve ho gayi
+    - issue resolved
+    - satisfied hoon
+    - khush hoon
+    - happy with service
+    - achha laga service
+    - badiya tha
+    - mast tha
+    - ekdum badhiya
+    - thanks a lot
+    - bohot bohot shukriya
+    - bahut bahut dhanyavaad
+    - aapka bohot shukriya
+    - thank you very much
+    - aapki kripa hai
+    - aapka ehsaan hai
+    - grateful hoon
+    - appreciation
+    - acknowledg edment
+    - recognition
+    - aabhari hoon
+    - respect
+    - salute
+    - regards
+    - shubh kaamnaaye
+    - best wishes
+    - all the best
+    - good luck
+    - cya
+    - see ya
+    - later
+    - catch you later
+    - peace
+    - peace out
+    - signing off
+    - khatam
+    - disconnect
+    - call end karo
+    - cut the call
+    - rakho phone
+    - farewell
+    - see you later
+    - see you soon
+    - catch you later
+    - talk to you later
+    - speak soon
+    - until next time
+    - have a good day
+    - have a great day
+    - enjoy your day
+    - have a nice evening
+    - good day to you
+    - pleasant day
+    - sweet dreams
+    - sleep well
+    - rest well
+    - take it easy
+    - stay safe
+    - be well
+    - all the best
+    - best of luck
+    - good fortune
+    - much appreciated
+    - appreciate it
+    - appreciate your help
+    - thanks for everything
+    - thank you for your time
+    - grateful for your help
+    - you've been helpful
+    - that was helpful
+    - problem solved
+    - issue resolved
+    - got what I needed
+    - all clear now
+    - understood
+    - makes sense
+    - that's perfect
+    - exactly what I wanted
+    - that's all I needed
+    - I'm done here
+    - nothing else
+    - that'll be all
+    - end conversation
+    - disconnect call
+    - hang up
+    - close chat
+    - exit
+    - quit
+    - sign off
+    - logging off
+    - over and out
 
 - intent: affirm
   examples: |
@@ -568,6 +1502,109 @@ nlu:
     - haan bhai
     - achha
     - correct
+    - yup
+    - yep
+    - yeah
+    - absolutely
+    - exactly
+    - right
+    - bilkul sahi
+    - ekdum sahi
+    - perfect
+    - thik hai bhai
+    - chal theek hai
+    - chalo theek hai
+    - ho jaye
+    - ho jaye kaam
+    - karlo
+    - kar dena
+    - kar dalo
+    - kardo yaar
+    - haan yaar
+    - confirmed
+    - accept
+    - agree
+    - approved
+    - go ahead
+    - jaari rakho
+    - continue karo
+    - chalao
+    - badho aage
+    - koi baat nahi
+    - koi dikkat nahi
+    - problem nahi hai
+    - sahi rahega
+    - chalega
+    - ho jayega
+    - done hai
+    - ok done
+    - thik hai done
+    - confirm kar do
+    - confirm hai
+    - haan sahijust do it
+    - bas kar do
+    - simply kar do
+    - straight kar do
+    - seedha kar do
+    - direct kar do
+    - haan main chahta hoon
+    - main ready hoon
+    - main tayaar hoon
+    - proceed
+    - affirmative
+    - roger that
+    - copy that
+    - understood
+    - yes indeed
+    - that's right
+    - you got it
+    - spot on
+    - bang on
+    - precisely
+    - indeed
+    - for sure
+    - most certainly
+    - without a doubt
+    - no doubt
+    - undoubtedly
+    - positively
+    - absolutely yes
+    - yes I do
+    - yes I would
+    - yes I agree
+    - I agree
+    - I accept
+    - I approve
+    - sounds good
+    - sounds great
+    - sounds perfect
+    - that works
+    - that'll work
+    - works for me
+    - fine by me
+    - no problem
+    - no worries
+    - all good
+    - perfectly fine
+    - totally fine
+    - completely okay
+    - I'm in
+    - count me in
+    - I'm ready
+    - ready to go
+    - let's do it
+    - let's proceed
+    - go for it
+    - make it happen
+    - get it done
+    - that's what I want
+    - exactly
+    - you're right
+    - I understand
+    - got it
+    - understood completely
+    - crystal clear
+    - makes sense to me
 
 - intent: deny
   examples: |
@@ -605,6 +1642,116 @@ nlu:
     - nahin
     - never mind
     - koi zaroorat nahi
+    - na bhai
+    - nahi yaar
+    - mat karo yaar
+    - bas karo
+    - bas rehne do
+    - cancel kar do
+    - wapis jao
+    - peeche jao
+    - back karo
+    - undo karo
+    - vapas lo
+    - nahi chahiye bhai
+    - interest nahi hai
+    - man nahi hai
+    - dil nahi kar raha
+    - nahi pasand hai
+    - accha nahi lag raha
+    - theek nahi hai yeh
+    - galat hai
+    - sahi nahi hai
+    - wrong hai
+    - incorrect
+    - not interested
+    - not now
+    - maybe later
+    - shayad baad mein
+    - kabhi aur
+    - phir kabhi
+    - later dekhunga
+    - sochna padega
+    - decide nahi kar paya
+    - confusion hai
+    - clear nahi hai
+    - negative
+    - disagree
+    - refuse
+    - reject
+    - decline
+    - mana hai
+    - inkaar hai
+    - ghalat
+    - galat baat
+    - theek nahi
+    - na karoge toh accha
+    - mat hi karo
+    - zaroorat nahi
+    - need nahi hai
+    - requirement nahi
+    - kam nahi aayega
+    - fayda nahi
+    - koi sense nahi
+    - not really
+    - I don't think so
+    - I disagree
+    - I decline
+    - I refuse
+    - can't do that
+    - won't work
+    - doesn't work for me
+    - not interested
+    - no interest
+    - not for me
+    - pass
+    - I'll pass
+    - skip it
+    - skip that
+    - forget it
+    - leave it
+    - drop it
+    - nevermind
+    - not now
+    - not yet
+    - maybe later
+    - some other time
+    - perhaps later
+    - not today
+    - another day
+    - hold on
+    - wait a minute
+    - hold that thought
+    - second thought
+    - changed my mind
+    - I've reconsidered
+    - better not
+    - probably not
+    - unlikely
+    - I doubt it
+    - don't think so
+    - not happening
+    - no way
+    - absolutely not
+    - definitely not
+    - certainly not
+    - under no circumstances
+    - out of the question
+    - unacceptable
+    - can't accept
+    - not acceptable
+    - doesn't make sense
+    - not logical
+    - unreasonable
+    - not feasible
+    - impractical
+    - won't help
+    - useless
+    - pointless
+    - unnecessary
+    - not needed
+    - not required
+    - don't need it
 
 - intent: request_human
   examples: |
@@ -643,6 +1790,95 @@ nlu:
     - human assistance
     - customer executive
     - service representative
+    - bhai kisi insaan se baat karwao
+    - tumse baat nahi karni
+    - tumhara reply samajh nahi aa raha
+    - aap meri baat samajh nahi paa rahe
+    - explain nahi ho raha
+    - yeh toh automated hai
+    - recording lag rahi hai
+    - koi aur option do
+    - person se connect karo please
+    - mujhe executive chahiye
+    - yeh kaam tum nahi kar sakte
+    - complex issue hai
+    - detail mein baat karni hai
+    - proper explanation chahiye
+    - koi call kar sakta hai kya
+    - call back chahiye
+    - phone pe baat karni hai
+    - directly baat karni hai
+    - live support do
+    - technical support chahiye
+    - senior person se baat
+    - experienced person chahiye
+    - expert se baat karwao
+    - knowledgeable person chahiye
+    - yeh question complicated hai
+    - simple answer nahi hai
+    - emergency hai bhai
+    - urgent help chahiye
+    - priority case hai
+    - immediate attention chahiye
+    - serious problem hai
+    - badi dikkat hai
+    - major issue report karna hai
+    - complaint lodge karni hai
+    - formal complaint
+    - escalation chahiye
+    - higher authority se baat
+    - concerned person se milwao
+    - responsible person kaun hai
+    - incharge se baat karni hai
+    - decision maker chahiye
+    - authorize person se connect karo
+    - tum authority nahi ho
+    - tum decide nahi kar sakte
+    - manual intervention chahiye
+    - human touch chahiye
+    - personal service
+    - dedicated support
+    - one on one baat
+    - direct connection
+    - I want to speak with a human
+    - connect me to a real person
+    - transfer to customer service
+    - I need human assistance
+    - can I talk to someone
+    - is there a person I can speak with
+    - get me a live agent
+    - I don't want to talk to a bot
+    - this bot is not helping
+    - I need to speak with support
+    - escalate my call
+    - transfer to supervisor
+    - connect me to a manager
+    - I want to file a complaint
+    - speak with customer care
+    - can someone call me back
+    - I need phone support
+    - talk to technical support
+    - this is urgent need human help
+    - emergency assistance required
+    - priority support needed
+    - I have a complex issue
+    - need detailed explanation
+    - bot cannot handle this
+    - requires manual intervention
+    - human touch needed
+    - personal assistance
+    - dedicated support agent
+    - experienced person needed
+    - expert consultation
+    - speak with authorized person
+    - decision maker required
+    - this is a serious problem
+    - major issue to report
+    - formal complaint to register
+    - escalation required
+    - need immediate attention
+    - can't resolve through bot
+    - automated response not helpful
 
 - intent: out_of_scope
   examples: |
@@ -686,6 +1922,70 @@ nlu:
     - calculator kholo
     - google search karo
     - youtube kholo
+    - tell me a joke
+    - what's the weather today
+    - play music
+    - book a flight
+    - order food
+    - set an alarm
+    - what time is it
+    - current time
+    - calendar
+    - schedule meeting
+    - video call karo
+    - facetime pe baat
+    - whatsapp message
+    - instagram kholo
+    - facebook chalao
+    - twitter dekho
+    - linkedin profile
+    - tiktok video
+    - snapchat filter
+    - photo click karo
+    - selfie lo
+    - camera on karo
+    - flashlight on
+    - torch jalao
+    - volume badh ao
+    - brightness kam karo
+    - wifi connect karo
+    - bluetooth on
+    - airplane mode
+    - do not disturb
+    - screenshot lo
+    - screen record karo
+    - translate karo
+    - dictionary meaning
+    - spell check
+    - grammar correct karo
+    - read this text
+    - text to speech
+    - voice typing
+    - dictation mode
+    - notes banana hai
+    - to do list
+    - shopping list banao
+    - recipe batao
+    - cooking tips
+    - health tips
+    - fitness advice
+    - yoga exercises
+    - meditation guide
+    - sleep sounds
+    - motivational quotes
+    - inspire me
+    - dating advice
+    - relationship tips
+    - fashion trends
+    - makeup tutorial
+    - haircut style
+    - home decoration
+    - interior design
+    - gardening tips
+    - plant care
+    - pet care tips
+    - dog training
+    - cat food
 
 # ============================================
 # LOOKUP TABLE FOR TIME PERIOD ENTITY
@@ -736,6 +2036,70 @@ nlu:
     - last 15 days
     - pichle 2 hafte
     - last 2 weeks
+    - subah
+    - morning
+    - shaam
+    - evening
+    - raat
+    - night
+    - dopahar
+    - afternoon
+    - aaj subah
+    - this morning
+    - kal raat
+    - last night
+    - aaj shaam
+    - this evening
+    - kal subah
+    - tomorrow morning
+    - parso
+    - day after tomorrow
+    - narso
+    - day before yesterday
+    - teen din pehle
+    - 3 days ago
+    - chaar din baad
+    - 4 days later
+    - do din mein
+    - within 2 days
+    - agle hafte
+    - next week
+    - agle mahine
+    - next month
+    - agli baar
+    - next time
+    - pichli baar
+    - last time
+    - har din
+    - everyday
+    - har hafte
+    - every week
+    - har mahine
+    - every month
+    - rozana
+    - daily
+    - hamesha
+    - always
+    - kabhi kabhi
+    - sometimes
+    - aksar
+    - frequently
+    - abhi tak
+    - till now
+    - ab tak
+    - so far
+    - abhi recently
+    - just now
+    - thodi der pehle
+    - a while ago
+    - kuch der baad
+    - in a while
+    - jaldi
+    - soon
+    - turant
+    - immediately
+    - foran
+    - at once
 
 # ============================================
 # REGEX PATTERNS FOR DATE EXTRACTION
@@ -938,17 +2302,103 @@ nlu:
     - Sector 62
     - Sector 18
     - MG Road
+    - Connaught Place
+    - CP
+    - Karol Bagh
+    - Saket
+    - Vasant Kunj
+    - Janakpuri
+    - Tilak Nagar
+    - Rajouri Garden
+    - Punjabi Bagh
+    - Pitampura
+    - Paschim Vihar
+    - Uttam Nagar
+    - Vikaspuri
+    - Najafgarh
+    - Dwarka Mor
+    - Palam
+    - Mahipalpur
+    - Vasant Vihar
+    - RK Puram
+    - Hauz Khas
+    - Green Park
+    - Nehru Place
+    - Kalkaji
+    - Govindpuri
+    - Badarpur
+    - Faridabad
+    - Greater Noida
+    - Ghaziabad
+    - Indirapuram
+    - Vaishali
+    - Anand Vihar
+    - Preet Vihar
+    - Patparganj
+    - Shahdara
+    - Dilshad Garden
+    - Seelampur
+    - Yamuna Vihar
+    - GTB Nagar
+    - Model Town
+    - Civil Lines
+    - Kashmere Gate
+    - Chandni Chowk
+    - Paharganj
+    - Karol Bagh
+    - Rajendra Place
+    - Patel Nagar
+    - Naraina
+    - Moti Nagar
+    - Kirti Nagar
+    - Subhash Nagar
+    - Tagore Garden
+    - Rajouri Garden
 
 - lookup: station_name
   examples: |
     - Laxmi Nagar Station
     - Dwarka Mor
+    - Dwarka Mor Station
     - Mayur Vihar Station
     - Rohini Station
     - Okhla Station
     - Sector 62 Station
+    - Sector 18 Station
     - MG Road Station
     - Palam Station
+    - Connaught Place Station
+    - CP Station
+    - Karol Bagh Station
+    - Saket Station
+    - Nehru Place Station
+    - Anand Vihar Station
+    - Rajouri Garden Station
+    - Pitampura Station
+    - Janakpuri Station
+    - Uttam Nagar Station
+    - Tilak Nagar Station
+    - Greater Noida Station
+    - Noida City Centre
+    - Vaishali Station
+    - Dilshad Garden Station
+    - GTB Nagar Station
+    - Kashmere Gate Station
+    - ISBT Station
+    - Rajendra Place Station
+    - Kirti Nagar Station
+    - Punjabi Bagh Station
+    - Paschim Vihar Station
+    - Vikaspuri Station
+    - Mundka Station
+    - Badarpur Station
+    - Sarita Vihar Station
+    - Kalkaji Station
+    - Hauz Khas Station
+    - Green Park Station
+    - Vasant Vihar Station
+    - RK Puram Station
+    - Mahipalpur Station
 
 - lookup: plan_type
   examples: |
