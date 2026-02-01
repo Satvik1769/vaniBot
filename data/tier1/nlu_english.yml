@@ -1,0 +1,1553 @@
+version: "3.1"
+
+nlu:
+# ============================================
+# USE CASE 1: Swap History & Invoice
+# ============================================
+- intent: check_swap_history
+  examples: |
+    - show my swap history
+    - display my battery swap history
+    - I want to see my swaps
+    - what swaps have I done
+    - give me my swap records
+    - I need to check my battery swap history
+    - how many times have I swapped
+    - what's my swap count
+    - show me all my swaps
+    - list my battery swaps
+    - display swap transactions
+    - swap activity log
+    - battery replacement history
+    - how many batteries have I changed
+    - my battery swap details
+    - fetch my swap data
+    - retrieve swap information
+    - access my swap records
+    - view battery change log
+    - historical swap data
+    - [today](time_period)'s swaps
+    - [yesterday](time_period)'s swaps
+    - swaps from [last week](time_period)
+    - [this month](time_period)'s swap history
+    - [last month](time_period)'s swaps
+    - recent battery swaps
+    - latest swap activity
+    - current month swap history
+    - year to date swaps
+    - quarterly swap report
+    - annual swap summary
+    - lifetime swap count
+    - total swaps till date
+    - how many swaps did I do [today](time_period)
+    - show swaps from [last 7 days](time_period)
+    - swaps in [this week](time_period)
+    - [this year](time_period)'s total swaps
+    - my swapping pattern
+    - swap frequency
+    - average swaps per day
+    - monthly average swaps
+    - swaps trend
+    - last few swaps
+    - all my swap data
+    - complete swap history
+    - full swap records
+    - every swap I've made
+    - check my swap log
+    - swap details please
+    - need my swap information
+    - can you show my swaps
+    - pull up my swap history
+    - get my swap records
+    - what's my swapping history
+    - any swaps recorded
+    - swaps on [January 15](date)
+    - [31 December](date) swap record
+    - swaps between [1 January](date) and [31 January](date)
+    - [February](date) swaps
+    - how many swaps in [January](date)
+    - [last 3 days](time_period) swap count
+    - [morning](time_period) swaps
+    - [evening](time_period) swap history
+    - did I swap [yesterday](time_period)
+    - when was my last swap
+    - most recent swap
+    - previous swap details
+    - swap history overview
+    - summary of my swaps
+    - swap statistics
+    - swapping report
+    - battery exchange history
+    - how often do I swap
+    - swap count for [this week](time_period)
+    - total number of swaps
+    - check swap records for [today](time_period)
+
+- intent: explain_invoice
+  examples: |
+    - explain this invoice
+    - what is this charge for
+    - why was I charged
+    - invoice details please
+    - break down the bill
+    - what does this amount mean
+    - clarify the charges
+    - why this extra charge
+    - explain the bill
+    - invoice number details
+    - what are these charges
+    - why did you deduct money
+    - payment explanation needed
+    - billing details
+    - charge breakdown
+    - itemized bill
+    - what's included in invoice
+    - why [35 rupees](amount) charged
+    - what is [₹50](amount) for
+    - [70 rupees](amount) charge explanation
+    - extra fees why
+    - additional charges explained
+    - hidden costs
+    - unexpected charge
+    - invoice clarification
+    - bill explanation
+    - payment summary
+    - transaction details
+    - deduction reason
+    - why this debit
+    - account statement
+    - billing information
+    - cost analysis
+    - price justification
+    - charge validation
+    - invoice [INV-202601-000001](invoice_id) details
+    - explain charge of [₹40](amount)
+    - what's this [60 rupees](amount) for
+    - why was [170](amount) rupees deducted
+    - service charge on invoice
+    - penalty charge explained
+    - understand my bill
+    - what am I being charged for
+    - breakdown of charges
+    - explain my payment
+    - invoice breakdown
+    - billing query
+    - charges on my account
+    - why this amount
+    - payment breakdown
+    - explain these deductions
+    - what's the charge for
+    - understand the invoice
+    - detailed invoice explanation
+    - charge details needed
+    - what does the bill include
+    - is this charge correct
+    - verify my charges
+    - check invoice accuracy
+    - dispute this charge
+    - question about billing
+    - invoice inquiry
+    - billing concern
+    - payment concern
+
+- intent: ask_pricing
+  examples: |
+    - what is the swap price
+    - how much does a swap cost
+    - pricing information
+    - what's the swap cost
+    - how much per swap
+    - single swap price
+    - one swap charge
+    - battery swap fee
+    - swap pricing
+    - cost per battery change
+    - charge for one swap
+    - price for swap
+    - swap rate information
+    - what do you charge
+    - fees and charges
+    - price details
+    - rate information
+    - cost structure
+    - pricing model
+    - charge sheet
+    - fee schedule
+    - rate card please
+    - show me the rates
+    - what are your prices
+    - pricing structure
+    - how much for one swap
+    - per swap cost
+    - individual swap price
+    - swap fee amount
+    - battery exchange cost
+    - what's the rate
+    - tell me the price
+    - swap cost details
+    - pricing query
+    - rate inquiry
+    - how much do I pay per swap
+    - what's the charge per swap
+    - battery swap pricing
+    - swap transaction cost
+    - fee per swap
+    - price per battery change
+
+- intent: ask_leave_penalty
+  examples: |
+    - what is leave penalty
+    - how much penalty for absence
+    - charge for taking leave
+    - cost of absence
+    - leave penalty amount
+    - deduction for leave
+    - absence charges
+    - off day penalty
+    - holiday penalty
+    - leave policy details
+    - absence policy
+    - penalty structure
+    - how many free leaves
+    - allowed leave days
+    - leave allowance
+    - leave quota per month
+    - leave entitlement
+    - penalty per day
+    - daily absence charge
+    - leave deduction rate
+    - what's my leave penalty
+    - check my penalty
+    - absence charges for me
+    - my leave deductions
+    - how many leave days do I get
+    - monthly leave limit
+    - free days per month
+    - penalty for not working
+    - absent day charges
+    - leave fee structure
+    - off day deduction
+    - holiday deduction amount
+    - leave penalty per day
+    - absence penalty rate
+    - what happens if I take leave
+    - leave consequence
+    - deduction for absence
+    - penalty calculation
+    - leave charges explained
+    - understand leave penalty
+    - leave policy explained
+
+- intent: ask_service_charge
+  examples: |
+    - what is service charge
+    - explain service charge
+    - why am I charged for service
+    - service fee details
+    - what's the service fee
+    - service charge amount
+    - how much is service charge
+    - why service fee
+    - reason for service charge
+    - service charge explanation
+    - vehicle service charge
+    - maintenance charge
+    - service cost
+    - servicing fee
+    - what does service charge cover
+    - is service charge mandatory
+    - can I avoid service charge
+    - service charge breakdown
+    - [40 rupees](amount) for what service
+    - what's the [₹40](amount) service fee for
+    - service fee explanation
+    - maintenance fee details
+    - servicing cost
+    - service charge purpose
+    - why service fee applied
+    - service charge query
+    - understand service charge
+    - service fee information
+    - vehicle maintenance charge
+    - what's covered in service charge
+    - service charge frequency
+    - how often is service charge
+    - monthly service fee
+    - regular service charge
+
+# ============================================
+# USE CASE 2: Station Finder & Availability
+# ============================================
+- intent: find_nearest_station
+  examples: |
+    - where is the nearest station
+    - find the nearest battery swap station
+    - locate the closest station to me
+    - I need to find a nearby swap station
+    - which station is closest to my location
+    - show me nearby battery stations
+    - help me find a swap station
+    - where's the nearest battery swap point
+    - I'm looking for a station near me
+    - can you find stations in my area
+    - search for battery swap locations
+    - stations within 5 km
+    - closest battery swap facility
+    - nearest charging station
+    - locate battery swap center
+    - where do I go to swap my battery
+    - station finder
+    - battery swap locations nearby
+    - map of nearby stations
+    - directions to nearest station
+    - how do I get to the station
+    - station address please
+    - what's the closest swap point
+    - find swap station in [Delhi](location)
+    - battery stations in my city
+    - show all stations near me
+    - which station should I go to
+    - recommend a nearby station
+    - suggest closest swap location
+    - battery swap facilities around me
+    - where can I exchange battery
+    - swap center locator
+    - station availability near me
+    - open stations nearby
+    - 24 hour swap stations
+    - late night swap location
+    - station near [Laxmi Nagar](location)
+    - [Dwarka](location) area station
+    - swap station in [Noida](location)
+    - [Rohini](location) battery station
+    - stations around [Connaught Place](location)
+    - nearest station to [Saket](location)
+    - find station in [Janakpuri](location)
+    - [Mayur Vihar](location) swap point
+    - battery swap near [Okhla](location)
+    - closest station to my home
+    - station near my office
+    - on my route station
+    - emergency swap location
+    - battery running low where to go
+    - urgent swap needed location
+    - where can I swap now
+    - immediate swap location
+    - find swap point quickly
+    - nearest operational station
+    - working station nearby
+    - active swap station
+    - station with batteries
+    - available station near me
+
+- intent: check_station_availability
+  examples: |
+    - are batteries available at the station
+    - check battery stock at nearest station
+    - is the station open right now
+    - how many batteries are available
+    - can I swap my battery now
+    - is there battery in stock
+    - check real time availability
+    - battery inventory status
+    - are charged batteries available
+    - station capacity check
+    - how long is the wait time
+    - is the station crowded
+    - queue length at station
+    - will I get battery immediately
+    - instant swap possible
+    - can I come to station now
+    - is swap possible right now
+    - station operational status
+    - check if station is functioning
+    - battery stock level
+    - current inventory
+    - live stock update
+    - fresh availability data
+    - updated battery count
+    - how many batteries in stock
+    - charged battery ready
+    - full charge batteries available
+    - empty slot available
+    - can I book a slot
+    - station timings
+    - what time does station open
+    - closing time of station
+    - 24 hour operation
+    - late night swap available
+    - early morning swap
+    - weekend availability
+    - battery availability at [Dwarka Mor](station_name)
+    - stock at [Laxmi Nagar Station](station_name)
+    - [Rohini Station](station_name) availability
+    - batteries at [Mayur Vihar Station](station_name)
+    - check [Okhla Station](station_name) stock
+    - [Saket Station](station_name) status
+    - is [Nehru Place Station](station_name) open
+    - waiting time at station
+    - how busy is the station
+    - station queue status
+    - expected wait time
+    - current wait time
+    - is there a line
+    - how many people waiting
+    - station working hours
+    - operating hours
+    - when does station close
+    - is station 24x7
+    - night time availability
+    - morning hours
+    - station status check
+    - real-time availability
+    - live battery count
+    - current stock status
+
+# ============================================
+# USE CASE 3: Subscription & Pricing
+# ============================================
+- intent: check_subscription
+  examples: |
+    - check my subscription status
+    - what's my current plan
+    - show me my plan details
+    - when does my plan expire
+    - how many days left in my subscription
+    - is my plan still active
+    - subscription expiry date
+    - remaining validity of my plan
+    - what subscription do I have
+    - tell me about my plan
+    - check plan validity
+    - how long is my subscription valid
+    - when will my plan end
+    - subscription information
+    - display my account details
+    - what are my plan benefits
+    - how many swaps do I have left
+    - remaining swap quota
+    - check my swap balance
+    - what's included in my plan
+    - plan features and benefits
+    - subscription type I'm on
+    - am I on monthly or weekly plan
+    - verify my subscription
+    - confirm plan status
+    - is my account active
+    - check account balance
+    - wallet balance inquiry
+    - credit remaining
+    - payment due amount
+    - outstanding balance
+    - subscription renewal date
+    - auto renewal status
+    - when to renew subscription
+    - plan upgrade options
+    - can I change my plan
+    - my current subscription
+    - plan status please
+    - subscription details
+    - show my plan
+    - plan validity check
+    - days remaining in plan
+    - swaps remaining
+    - swap limit check
+    - quota remaining
+    - monthly limit status
+    - daily limit check
+    - maximum swaps allowed
+    - unlimited plan check
+    - free swaps remaining
+    - paid swap count
+    - extra swap charges
+    - plan inclusions
+    - benefits in my plan
+    - plan advantages
+    - facilities available
+    - full plan details
+    - complete subscription info
+    - account status
+    - payment status
+    - any dues pending
+    - pending payment check
+    - balance in account
+    - credit balance
+    - wallet status
+
+- intent: renew_subscription
+  examples: |
+    - I want to renew my subscription
+    - extend my plan
+    - recharge my account
+    - buy a new plan
+    - purchase subscription
+    - activate my plan
+    - need to renew before expiry
+    - subscription expired need to renew
+    - continue my current plan
+    - same plan again
+    - keep my plan active
+    - auto renew my subscription
+    - set up automatic renewal
+    - enable auto pay
+    - recurring payment setup
+    - upgrade to premium plan
+    - switch to better plan
+    - change my subscription
+    - downgrade my plan
+    - try different plan
+    - [monthly](plan_type) plan purchase
+    - [weekly](plan_type) subscription needed
+    - [daily](plan_type) plan activation
+    - [yearly](plan_type) membership
+    - annual subscription
+    - lifetime plan available
+    - upgrade to unlimited
+    - premium features access
+    - pro version needed
+    - how to renew subscription
+    - renewal process
+    - payment methods accepted
+    - can I pay online
+    - credit card payment
+    - debit card accepted
+    - UPI payment option
+    - net banking available
+    - Paytm wallet
+    - PhonePe payment
+    - Google Pay accepted
+    - any discounts available
+    - promo code
+    - coupon code apply
+    - first time user offer
+    - referral discount
+    - loyalty benefits
+    - trial period available
+    - renew my plan
+    - extend subscription
+    - resubscribe
+    - plan renewal
+    - subscription extension
+    - plan reactivation
+    - renew expired plan
+    - restore subscription
+    - continue subscription
+    - maintain my plan
+    - keep plan active
+    - avoid expiry
+    - prevent plan lapse
+    - subscription purchase
+    - buy [monthly](plan_type) plan
+    - get [weekly](plan_type) subscription
+    - activate [daily](plan_type) plan
+    - [yearly](plan_type) plan needed
+    - upgrade plan
+    - better plan wanted
+    - higher tier plan
+    - premium upgrade
+    - plan switch
+    - change current plan
+    - modify subscription
+
+- intent: explain_pricing
+  examples: |
+    - what are the prices
+    - tell me the pricing
+    - how much does it cost
+    - price list please
+    - subscription rates
+    - what's the cost
+    - pricing information
+    - rate card
+    - charges details
+    - how much for [monthly](plan_type) plan
+    - [weekly](plan_type) plan cost
+    - [daily](plan_type) plan price
+    - [yearly](plan_type) subscription fee
+    - all plans pricing
+    - compare plan prices
+    - what's the cheapest option
+    - most affordable plan
+    - budget friendly plan
+    - economical option
+    - best value for money
+    - premium plan cost
+    - basic plan price
+    - standard plan rate
+    - advanced plan pricing
+    - unlimited plan fee
+    - per swap charge
+    - swap rate
+    - additional swap cost
+    - extra charges
+    - hidden fees
+    - total expense
+    - complete cost
+    - pricing structure
+    - cost breakdown
+    - fee schedule
+    - tariff details
+    - payment plans
+    - installment options
+    - EMI available
+    - discount offers
+    - promotional pricing
+    - special rates
+    - current offers
+    - seasonal discounts
+    - coupon codes
+    - referral benefits
+    - loyalty rewards
+    - bulk purchase discount
+    - GST inclusive
+    - tax details
+    - refund policy
+    - cancellation charges
+    - all plans and prices
+    - plan comparison
+    - which plan is cheapest
+    - value for money plan
+    - affordable options
+    - expensive plan features
+    - cheap plan limitations
+    - price difference between plans
+    - monthly cost estimate
+    - weekly expense
+    - daily cost
+    - annual fee
+    - one time payment
+    - recurring charges
+    - subscription cost
+    - plan rates
+    - pricing tiers
+    - cost options
+    - payment amounts
+    - fee structure
+    - charge schedule
+
+# ============================================
+# USE CASE 4: Leave & DSK
+# ============================================
+- intent: apply_leave
+  examples: |
+    - I need to apply for leave
+    - request time off
+    - take a day off [tomorrow](leave_date)
+    - need leave for [3 days](leave_duration)
+    - apply for vacation
+    - submit leave application
+    - I want to take leave
+    - off for [next week](leave_date)
+    - holiday request
+    - absent [tomorrow](leave_date)
+    - won't be coming to work
+    - need a break
+    - time off required
+    - leave from [Monday](leave_date)
+    - sick leave needed
+    - not feeling well need leave
+    - medical leave application
+    - emergency leave required
+    - family emergency
+    - personal leave needed
+    - casual leave request
+    - planned leave
+    - vacation days
+    - annual leave
+    - earned leave
+    - compensatory off
+    - comp off request
+    - half day leave
+    - short leave needed
+    - few hours off
+    - late coming request
+    - early leaving
+    - work from home
+    - remote work option
+    - unpaid leave acceptable
+    - without pay leave
+    - maternity leave
+    - paternity leave
+    - bereavement leave
+    - funeral leave
+    - wedding leave
+    - attending ceremony
+    - out of station
+    - traveling
+    - on tour
+    - business trip
+    - personal trip
+    - apply for [one week](leave_duration) leave
+    - [2 days](leave_duration) off needed
+    - leave on [15th](leave_date)
+    - [Monday to Friday](leave_date) off
+    - [5 days](leave_duration) vacation
+    - take leave [today](leave_date)
+    - off [next Monday](leave_date)
+    - leave starting [tomorrow](leave_date)
+    - [one month](leave_duration) leave
+    - [two weeks](leave_duration) break
+    - continuous leave
+    - back to back days off
+    - extended leave
+    - long leave application
+    - short break needed
+    - quick leave
+    - urgent leave required
+    - immediate time off
+    - sudden leave
+    - unplanned leave
+    - health reasons leave
+    - doctor visit leave
+    - hospital appointment
+    - medical checkup leave
+    - family function leave
+    - event attendance
+    - personal work
+    - important errand
+
+- intent: find_nearest_dsk
+  examples: |
+    - where is the DSK location
+    - find dealer service kiosk
+    - nearest service center
+    - where can I get support
+    - [activation](service_type) center location
+    - registration office
+    - account opening center
+    - where to signup
+    - new account creation location
+    - help desk location
+    - customer support center
+    - service point near me
+    - dealer location
+    - authorized service center
+    - [battery replacement](service_type) center
+    - [repair](service_type) center location
+    - technical [support](service_type) location
+    - DSK in my area
+    - closest DSK
+    - DSK finder
+    - locate DSK
+    - service kiosk near me
+    - where is DSK
+    - find DSK
+    - DSK near [Delhi](location)
+    - DSK in [Noida](location)
+    - nearest DSK please
+    - DSK address
+    - how to reach DSK
+    - directions to DSK
+    - DSK location map
+    - what is DSK
+    - DSK information
+    - tell me about DSK
+    - DSK details
+    - dealer service point
+    - service station
+    - help center nearby
+    - support desk location
+    - customer care center
+    - service outlet
+    - where to get help
+    - assistance center
+    - where to activate account
+    - registration location
+    - signup point
+    - new user registration
+    - account setup location
+    - onboarding center
+
+- intent: check_leave_status
+  examples: |
+    - check my leave status
+    - has my leave been approved
+    - is my leave request accepted
+    - leave application status
+    - what's my leave status
+    - pending leave check
+    - approved leaves
+    - rejected leaves
+    - leave request update
+    - holiday approval status
+    - time off approval
+    - is my absence approved
+    - leave balance inquiry
+    - how many leaves remaining
+    - available leave days
+    - leave quota left
+    - unused leave days
+    - carried forward leaves
+    - accrued leave balance
+    - leave history
+    - past leave records
+    - upcoming leaves
+    - scheduled time off
+    - future leave plans
+    - leave calendar
+    - absence record
+    - leave tracking
+    - time off tracking
+    - leave management
+    - supervisor approval status
+    - manager's decision
+    - HR approval
+    - leave sanctioned
+    - leave granted
+    - is my leave approved
+    - leave status update
+    - pending approval check
+    - leave request status
+    - holiday status check
+    - off day approval
+    - has leave been sanctioned
+    - leave confirmation
+    - verify leave status
+    - leave application update
+    - any response on leave
+    - leave decision
+    - leave outcome
+    - remaining leave balance
+    - leaves left
+    - leave count
+    - days off remaining
+    - leave available
+    - can I take more leave
+    - additional leave possible
+    - extra leave days
+
+# ============================================
+# COMMON INTENTS
+# ============================================
+- intent: greeting
+  examples: |
+    - hello
+    - hi
+    - hey
+    - good morning
+    - good afternoon
+    - good evening
+    - hi there
+    - hello there
+    - hey there
+    - greetings
+    - howdy
+    - what's up
+    - how are you
+    - how's it going
+    - nice to meet you
+    - pleased to meet you
+    - good to see you
+    - hello friend
+    - hi buddy
+    - hey mate
+    - what's happening
+    - how have you been
+    - long time
+    - nice talking to you
+    - glad to connect
+    - happy to chat
+    - thanks for picking up
+    - appreciate your time
+    - good day
+    - hello hello
+    - hi hi
+    - hey hey
+    - yo
+    - sup
+    - hiya
+    - how do you do
+    - how are things
+    - it's been a while
+    - hello again
+    - back again
+    - here I am
+    - I'm here
+    - good to be here
+    - starting conversation
+    - let's chat
+    - need some help
+    - can you help me
+    - assistance please
+    - hello can you help
+
+- intent: goodbye
+  examples: |
+    - bye
+    - goodbye
+    - see you
+    - see you later
+    - take care
+    - farewell
+    - catch you later
+    - talk to you later
+    - speak soon
+    - until next time
+    - have a good day
+    - have a great day
+    - enjoy your day
+    - have a nice evening
+    - good night
+    - sweet dreams
+    - sleep well
+    - rest well
+    - take it easy
+    - stay safe
+    - be well
+    - all the best
+    - best of luck
+    - thanks
+    - thank you
+    - thank you so much
+    - thanks a lot
+    - much appreciated
+    - appreciate it
+    - appreciate your help
+    - thanks for everything
+    - thank you for your time
+    - grateful for your help
+    - you've been helpful
+    - that was helpful
+    - problem solved
+    - issue resolved
+    - got what I needed
+    - all clear now
+    - understood
+    - makes sense
+    - that's perfect
+    - exactly what I wanted
+    - that's all I needed
+    - I'm done here
+    - nothing else
+    - that'll be all
+    - end conversation
+    - disconnect
+    - hang up
+    - close chat
+    - exit
+    - quit
+    - sign off
+    - logging off
+    - over and out
+    - cheers
+    - later
+    - peace
+    - cya
+    - ttyl
+
+- intent: affirm
+  examples: |
+    - yes
+    - yeah
+    - yep
+    - yup
+    - sure
+    - okay
+    - ok
+    - alright
+    - right
+    - correct
+    - exactly
+    - absolutely
+    - definitely
+    - certainly
+    - of course
+    - indeed
+    - affirmative
+    - agreed
+    - I agree
+    - that's right
+    - you got it
+    - spot on
+    - precisely
+    - for sure
+    - no doubt
+    - undoubtedly
+    - positively
+    - yes please
+    - yes I do
+    - yes I would
+    - yes I agree
+    - I accept
+    - I approve
+    - sounds good
+    - sounds great
+    - sounds perfect
+    - that works
+    - works for me
+    - fine by me
+    - no problem
+    - no worries
+    - all good
+    - perfectly fine
+    - I'm in
+    - count me in
+    - I'm ready
+    - ready to go
+    - let's do it
+    - let's proceed
+    - go for it
+    - make it happen
+    - get it done
+    - proceed
+    - continue
+    - go ahead
+    - confirmed
+    - roger that
+    - copy that
+    - understood
+    - got it
+    - I understand
+
+- intent: deny
+  examples: |
+    - no
+    - nope
+    - nah
+    - no thanks
+    - not really
+    - I don't think so
+    - I disagree
+    - I decline
+    - I refuse
+    - can't do that
+    - won't work
+    - doesn't work for me
+    - not interested
+    - not for me
+    - pass
+    - I'll pass
+    - skip it
+    - forget it
+    - leave it
+    - drop it
+    - nevermind
+    - not now
+    - not yet
+    - maybe later
+    - some other time
+    - perhaps later
+    - not today
+    - another day
+    - hold on
+    - wait a minute
+    - second thought
+    - changed my mind
+    - better not
+    - probably not
+    - unlikely
+    - I doubt it
+    - not happening
+    - no way
+    - absolutely not
+    - definitely not
+    - certainly not
+    - negative
+    - cancel
+    - stop
+    - abort
+    - don't do that
+    - don't want that
+    - not what I want
+    - wrong
+    - incorrect
+    - that's not right
+    - I don't need it
+    - not required
+    - unnecessary
+    - pointless
+    - useless
+    - won't help
+    - doesn't make sense
+
+- intent: request_human
+  examples: |
+    - I want to speak with a human
+    - connect me to a real person
+    - transfer to customer service
+    - I need human assistance
+    - can I talk to someone
+    - is there a person I can speak with
+    - get me a live agent
+    - I don't want to talk to a bot
+    - this bot is not helping
+    - I need to speak with support
+    - escalate my call
+    - transfer to supervisor
+    - connect me to a manager
+    - I want to file a complaint
+    - speak with customer care
+    - can someone call me back
+    - I need phone support
+    - talk to technical support
+    - this is urgent need human help
+    - emergency assistance required
+    - priority support needed
+    - I have a complex issue
+    - need detailed explanation
+    - bot cannot handle this
+    - requires manual intervention
+    - human touch needed
+    - personal assistance
+    - dedicated support agent
+    - experienced person needed
+    - expert consultation
+    - speak with authorized person
+    - decision maker required
+    - this is a serious problem
+    - major issue to report
+    - formal complaint to register
+    - escalation required
+    - need immediate attention
+    - can't resolve through bot
+    - automated response not helpful
+    - real person please
+    - live support
+    - customer service agent
+    - help desk representative
+    - support team member
+    - human operator
+    - service executive
+    - customer care executive
+    - talk to a human
+    - speak to a person
+    - connect to agent
+    - transfer call
+    - escalate this
+    - supervisor please
+    - manager needed
+    - higher authority
+
+- intent: out_of_scope
+  examples: |
+    - tell me a joke
+    - what's the weather today
+    - play music
+    - book a flight
+    - order food
+    - set an alarm
+    - what time is it
+    - current time
+    - calendar
+    - schedule meeting
+    - video call
+    - send message
+    - call someone
+    - pizza order
+    - movie tickets
+    - train timing
+    - book a cab
+    - hotel booking
+    - restaurant suggestion
+    - shopping
+    - play a game
+    - tell me a poem
+    - tell me a story
+    - news update
+    - cricket score
+    - stock market
+    - bitcoin price
+    - lottery result
+    - exam result
+    - bus timing
+    - metro schedule
+    - food delivery
+    - taxi booking
+    - play song
+    - show video
+    - edit photo
+    - print document
+    - send email
+    - set reminder
+    - open calculator
+    - google search
+    - open youtube
+    - social media
+    - instagram
+    - facebook
+    - twitter
+    - take a selfie
+    - turn on flashlight
+    - adjust volume
+    - change brightness
+    - connect wifi
+    - turn on bluetooth
+    - translate this
+    - dictionary meaning
+    - spell check
+    - grammar correction
+    - read text aloud
+    - voice typing
+    - make notes
+    - shopping list
+    - recipe
+    - cooking tips
+    - health tips
+    - fitness advice
+    - yoga exercises
+    - meditation guide
+    - motivational quotes
+    - dating advice
+    - fashion trends
+
+# ============================================
+# LOOKUP TABLE FOR TIME PERIOD ENTITY
+# ============================================
+- lookup: time_period
+  examples: |
+    - today
+    - yesterday
+    - tomorrow
+    - last week
+    - this week
+    - next week
+    - last month
+    - this month
+    - next month
+    - last year
+    - this year
+    - next year
+    - all
+    - morning
+    - afternoon
+    - evening
+    - night
+    - last 3 days
+    - last 5 days
+    - last 7 days
+    - last 10 days
+    - last 15 days
+    - last 2 weeks
+    - this morning
+    - last night
+    - this evening
+    - tomorrow morning
+    - day after tomorrow
+    - day before yesterday
+    - 3 days ago
+    - within 2 days
+    - everyday
+    - every week
+    - every month
+    - daily
+    - weekly
+    - monthly
+    - always
+    - sometimes
+    - frequently
+    - till now
+    - so far
+    - just now
+    - a while ago
+    - in a while
+    - soon
+    - immediately
+    - at once
+    - recently
+    - lately
+
+# ============================================
+# REGEX PATTERNS FOR DATE EXTRACTION
+# ============================================
+- regex: date
+  examples: |
+    - \d{1,2}\s*(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)
+    - (january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)\s*\d{1,2}
+    - \d{1,2}/\d{1,2}/\d{2,4}
+    - \d{1,2}-\d{1,2}-\d{2,4}
+
+# ============================================
+# LOOKUP TABLE FOR MONTH NAMES AND DATE PATTERNS
+# ============================================
+- lookup: date
+  examples: |
+    - january
+    - february
+    - march
+    - april
+    - may
+    - june
+    - july
+    - august
+    - september
+    - october
+    - november
+    - december
+    - jan
+    - feb
+    - mar
+    - apr
+    - jun
+    - jul
+    - aug
+    - sep
+    - oct
+    - nov
+    - dec
+    - 1st
+    - 2nd
+    - 3rd
+    - 4th
+    - 5th
+    - 10th
+    - 15th
+    - 20th
+    - 25th
+    - 30th
+    - 31st
+    - Monday
+    - Tuesday
+    - Wednesday
+    - Thursday
+    - Friday
+    - Saturday
+    - Sunday
+
+# ============================================
+# ENTITIES SYNONYMS
+# ============================================
+- synonym: today
+  examples: |
+    - today
+    - now
+    - right now
+    - currently
+
+- synonym: yesterday
+  examples: |
+    - yesterday
+    - previous day
+    - last day
+
+- synonym: last_week
+  examples: |
+    - last week
+    - previous week
+    - past week
+
+- synonym: last_month
+  examples: |
+    - last month
+    - previous month
+    - past month
+
+- synonym: this_month
+  examples: |
+    - this month
+    - current month
+    - ongoing month
+
+- synonym: last_year
+  examples: |
+    - last year
+    - previous year
+    - past year
+
+- synonym: this_year
+  examples: |
+    - this year
+    - current year
+    - ongoing year
+
+- synonym: this_week
+  examples: |
+    - this week
+    - current week
+    - ongoing week
+
+- synonym: last_3_days
+  examples: |
+    - last 3 days
+    - past 3 days
+    - previous 3 days
+
+- synonym: last_7_days
+  examples: |
+    - last 7 days
+    - past 7 days
+    - past week
+
+- synonym: all
+  examples: |
+    - all
+    - everything
+    - complete
+    - total
+    - entire
+
+- synonym: daily
+  examples: |
+    - daily
+    - per day
+    - one day
+    - single day
+
+- synonym: weekly
+  examples: |
+    - weekly
+    - per week
+    - 7 days
+    - one week
+
+- synonym: monthly
+  examples: |
+    - monthly
+    - per month
+    - 30 days
+    - one month
+
+- synonym: yearly
+  examples: |
+    - yearly
+    - annual
+    - per year
+    - 365 days
+    - one year
+
+- synonym: activation
+  examples: |
+    - activation
+    - new registration
+    - signup
+    - account creation
+
+- synonym: repair
+  examples: |
+    - repair
+    - fix
+    - maintenance
+    - service
+
+- synonym: support
+  examples: |
+    - support
+    - help
+    - assistance
+    - aid
+
+# ============================================
+# LOOKUP TABLES
+# ============================================
+- lookup: location
+  examples: |
+    - Delhi
+    - Noida
+    - Gurgaon
+    - Gurugram
+    - Laxmi Nagar
+    - Dwarka
+    - Rohini
+    - Mayur Vihar
+    - Okhla
+    - Sarita Vihar
+    - Sector 62
+    - Sector 18
+    - MG Road
+    - Connaught Place
+    - CP
+    - Karol Bagh
+    - Saket
+    - Vasant Kunj
+    - Janakpuri
+    - Tilak Nagar
+    - Rajouri Garden
+    - Punjabi Bagh
+    - Pitampura
+    - Paschim Vihar
+    - Uttam Nagar
+    - Vikaspuri
+    - Najafgarh
+    - Dwarka Mor
+    - Palam
+    - Mahipalpur
+    - Vasant Vihar
+    - RK Puram
+    - Hauz Khas
+    - Green Park
+    - Nehru Place
+    - Kalkaji
+    - Govindpuri
+    - Badarpur
+    - Faridabad
+    - Greater Noida
+    - Ghaziabad
+    - Indirapuram
+    - Vaishali
+    - Anand Vihar
+    - Preet Vihar
+    - Patparganj
+    - Shahdara
+    - Dilshad Garden
+    - Seelampur
+    - Yamuna Vihar
+    - GTB Nagar
+    - Model Town
+    - Civil Lines
+    - Kashmere Gate
+    - Chandni Chowk
+    - Paharganj
+    - Rajendra Place
+    - Patel Nagar
+    - Naraina
+    - Moti Nagar
+    - Kirti Nagar
+    - Subhash Nagar
+    - Tagore Garden
+
+- lookup: station_name
+  examples: |
+    - Laxmi Nagar Station
+    - Dwarka Mor
+    - Dwarka Mor Station
+    - Mayur Vihar Station
+    - Rohini Station
+    - Okhla Station
+    - Sector 62 Station
+    - Sector 18 Station
+    - MG Road Station
+    - Palam Station
+    - Connaught Place Station
+    - CP Station
+    - Karol Bagh Station
+    - Saket Station
+    - Nehru Place Station
+    - Anand Vihar Station
+    - Rajouri Garden Station
+    - Pitampura Station
+    - Janakpuri Station
+    - Uttam Nagar Station
+    - Tilak Nagar Station
+    - Greater Noida Station
+    - Noida City Centre
+    - Vaishali Station
+    - Dilshad Garden Station
+    - GTB Nagar Station
+    - Kashmere Gate Station
+    - ISBT Station
+    - Rajendra Place Station
+    - Kirti Nagar Station
+    - Punjabi Bagh Station
+    - Paschim Vihar Station
+    - Vikaspuri Station
+    - Mundka Station
+    - Badarpur Station
+    - Sarita Vihar Station
+    - Kalkaji Station
+    - Hauz Khas Station
+    - Green Park Station
+    - Vasant Vihar Station
+    - RK Puram Station
+    - Mahipalpur Station
+
+- lookup: plan_type
+  examples: |
+    - daily
+    - weekly
+    - monthly
+    - yearly
+    - annual
+    - unlimited
+    - basic
+    - standard
+    - premium
+    - pro
