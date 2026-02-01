@@ -191,3 +191,34 @@ async def send_swap_history_sms(
         "message": f"Swap history SMS sent to {phone_number}" if sms_result.get("success") else "SMS sending failed",
         "message_hi": f"Swap history SMS {phone_number} pe bhej di" if sms_result.get("success") else "SMS bhejne mein problem hui"
     }
+
+
+@router.get("/pricing")
+async def get_pricing_structure():
+    """
+    Get the current pricing structure.
+
+    Returns information about:
+    - Swap pricing (base ₹170, secondary ₹70)
+    - Leave policy (4 free days, ₹120 penalty, ₹60/swap recovery)
+    - Service charge (₹40/swap)
+    - Battery return penalty (₹80/day after 4 days grace)
+    """
+    return swap_service.get_pricing_info()
+
+
+@router.get("/leave-status/{phone_number}")
+async def get_leave_status(
+    phone_number: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get driver's leave status and pending penalties.
+
+    Returns:
+    - Leave days used this month
+    - Free leave days remaining
+    - Pending leave penalty amount
+    - Recovery progress
+    """
+    return await swap_service.get_leave_status(db, phone_number)

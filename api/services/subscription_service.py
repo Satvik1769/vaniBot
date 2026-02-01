@@ -7,10 +7,39 @@ from decimal import Decimal
 
 
 async def get_subscription_status(db: AsyncSession, phone_number: str) -> dict:
-    """Get driver's current subscription status."""
+    """Get driver's current subscription status by phone number."""
     query = text("""
-        SELECT * FROM v_active_subscriptions
-        WHERE phone_number = :phone_number
+        SELECT
+            ds.id as subscription_id,
+            ds.driver_id,
+            ds.plan_id,
+            ds.start_date,
+            ds.end_date,
+            ds.status,
+            ds.swaps_used,
+            ds.auto_renew,
+            ds.battery_id,
+            ds.battery_returned,
+            sp.code as plan_code,
+            sp.name as plan_name,
+            sp.name_hi as plan_name_hi,
+            sp.price as plan_price,
+            sp.validity_days,
+            sp.swaps_included,
+            sp.extra_swap_price,
+            d.driver_name,
+            d.phone_number,
+            (ds.end_date - CURRENT_DATE) as days_remaining,
+            CASE
+                WHEN sp.swaps_included = -1 THEN -1
+                ELSE GREATEST(0, sp.swaps_included - COALESCE(ds.swaps_used, 0))
+            END as swaps_remaining
+        FROM driver_subscriptions ds
+        JOIN drivers d ON ds.driver_id = d.id
+        JOIN subscription_plans sp ON ds.plan_id = sp.id
+        WHERE d.phone_number = :phone_number
+        AND ds.status = 'active'
+        ORDER BY ds.end_date DESC
         LIMIT 1
     """)
     result = await db.execute(query, {"phone_number": phone_number})
@@ -18,41 +47,54 @@ async def get_subscription_status(db: AsyncSession, phone_number: str) -> dict:
 
     if row:
         data = dict(row._mapping)
-        days_remaining = data.get("days_remaining", 0)
-        swaps_remaining = data.get("swaps_remaining", -1)
+        days_remaining = int(data.get("days_remaining", 0))
+        swaps_remaining = int(data.get("swaps_remaining", -1))
+        swaps_included = data.get("swaps_included", 0)
+        swaps_used = data.get("swaps_used", 0)
 
         # Generate appropriate messages
         if days_remaining <= 0:
             msg = "Your subscription has expired. Please renew to continue."
             msg_hi = "Aapka subscription expire ho gaya hai. Continue karne ke liye renew karein."
+            is_expired = True
         elif days_remaining <= 3:
             msg = f"Your {data['plan_name']} expires in {days_remaining} days. Renew soon!"
-            msg_hi = f"Aapka {data['plan_name_hi'] or data['plan_name']} {days_remaining} din mein expire ho raha hai. Jaldi renew karein!"
+            msg_hi = f"Aapka {data.get('plan_name_hi') or data['plan_name']} {days_remaining} din mein expire ho raha hai. Jaldi renew karein!"
+            is_expired = False
         else:
+            is_expired = False
             if swaps_remaining == -1:
                 msg = f"Your {data['plan_name']} is active with unlimited swaps. {days_remaining} days remaining."
-                msg_hi = f"Aapka {data['plan_name_hi'] or data['plan_name']} active hai unlimited swaps ke saath. {days_remaining} din bache hain."
+                msg_hi = f"Aapka {data.get('plan_name_hi') or data['plan_name']} active hai unlimited swaps ke saath. {days_remaining} din bache hain."
             else:
                 msg = f"Your {data['plan_name']} is active. {swaps_remaining} swaps remaining, {days_remaining} days left."
-                msg_hi = f"Aapka {data['plan_name_hi'] or data['plan_name']} active hai. {swaps_remaining} swaps bache hain, {days_remaining} din bache hain."
+                msg_hi = f"Aapka {data.get('plan_name_hi') or data['plan_name']} active hai. {swaps_remaining} swaps bache hain, {days_remaining} din bache hain."
 
         return {
-            "has_active_subscription": True,
+            "has_active_subscription": not is_expired,
+            "is_expired": is_expired,
+            "driver_id": str(data["driver_id"]),
+            "driver_name": data.get("driver_name"),
             "subscription": {
-                "id": data["subscription_id"],
+                "id": str(data["subscription_id"]),
+                "plan_id": str(data["plan_id"]),
                 "plan_code": data["plan_code"],
                 "plan_name": data["plan_name"],
                 "plan_name_hi": data.get("plan_name_hi"),
-                "price": data["plan_price"],
+                "price": float(data["plan_price"]),
                 "start_date": data["start_date"],
                 "end_date": data["end_date"],
                 "days_remaining": days_remaining,
-                "swaps_included": data["swaps_included"],
-                "swaps_used": data["swaps_used"],
+                "validity_days": data.get("validity_days"),
+                "swaps_included": swaps_included,
+                "swaps_used": swaps_used,
                 "swaps_remaining": swaps_remaining,
+                "extra_swap_price": float(data.get("extra_swap_price", 0)) if data.get("extra_swap_price") else None,
                 "status": data["status"],
-                "auto_renew": data["auto_renew"],
-                "is_expiring_soon": days_remaining <= 3
+                "auto_renew": data.get("auto_renew", False),
+                "battery_id": data.get("battery_id"),
+                "battery_returned": data.get("battery_returned"),
+                "is_expiring_soon": days_remaining <= 3 and days_remaining > 0
             },
             "message": msg,
             "message_hi": msg_hi
@@ -60,6 +102,9 @@ async def get_subscription_status(db: AsyncSession, phone_number: str) -> dict:
     else:
         return {
             "has_active_subscription": False,
+            "is_expired": True,
+            "driver_id": None,
+            "driver_name": None,
             "subscription": None,
             "message": "No active subscription found. Please subscribe to start swapping.",
             "message_hi": "Koi active subscription nahi mila. Swapping shuru karne ke liye subscribe karein."
@@ -276,6 +321,7 @@ async def initiate_renewal(
 async def get_subscription_with_penalty(db: AsyncSession, phone_number: str) -> dict:
     """Get subscription status with any applicable penalties."""
     from .swap_service import get_penalty_details
+
 
     subscription = await get_subscription_status(db, phone_number)
     penalty = await get_penalty_details(db, phone_number)

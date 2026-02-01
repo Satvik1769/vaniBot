@@ -108,6 +108,57 @@ nlu:
     - why this charge
     - paise kyun kate
     - bill mein kya hai
+    - [170](amount) rupaye kyun lage
+    - [70](amount) rupaye ka charge kya hai
+    - [60](amount) rupaye extra kyun
+    - [40](amount) rupaye kiske liye
+    - leave penalty kya hai
+    - service charge kya hai
+    - swap price kya hai
+    - itna charge kyun hua
+
+- intent: ask_pricing
+  examples: |
+    - swap ka price kya hai
+    - swap kitne ka hai
+    - ek swap mein kitna lagta hai
+    - pricing batao
+    - price structure kya hai
+    - swap rate kya hai
+    - kitna paisa lagta hai swap mein
+    - charges kya hain
+    - what is the swap price
+    - how much does a swap cost
+    - pricing information
+    - rate card batao
+    - swap ka rate batao
+
+- intent: ask_leave_penalty
+  examples: |
+    - leave penalty kya hai
+    - chutti penalty kya hai
+    - absent rehne pe kya hota hai
+    - leave lene pe kitna lagta hai
+    - penalty kitni hai
+    - leave days kitne milte hain
+    - mahine mein kitne din chutti le sakte hain
+    - free leave days kitne hain
+    - leave policy kya hai
+    - what is leave penalty
+    - penalty for absence
+    - how many leave days
+    - meri leave penalty kitni hai
+    - mera leave status kya hai
+
+- intent: ask_service_charge
+  examples: |
+    - service charge kya hai
+    - service charge kitna hai
+    - vehicle service ka charge
+    - service charge kyun lagta hai
+    - 40 rupaye kiske liye
+    - what is service charge
+    - why service charge
 
 # ============================================
 # USE CASE 2: Station Finder & Availability

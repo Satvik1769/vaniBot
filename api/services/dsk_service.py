@@ -134,7 +134,7 @@ async def get_nearest_dsk(
     if latitude and longitude:
         query = text(f"""
             SELECT
-                d.id, d.code, d.name, d.address, d.landmark,
+                d.id, d.code, d.driver_name, d.address, d.landmark,
                 d.latitude, d.longitude, d.city, d.pincode,
                 d.phone, d.operating_hours, d.services, d.is_active,
                 calculate_distance(:lat, :lon, d.latitude, d.longitude) as distance_km
@@ -150,7 +150,7 @@ async def get_nearest_dsk(
         params["city"] = f"%{city}%"
         query = text(f"""
             SELECT
-                d.id, d.code, d.name, d.address, d.landmark,
+                d.id, d.code, d.driver_name, d.address, d.landmark,
                 d.latitude, d.longitude, d.city, d.pincode,
                 d.phone, d.operating_hours, d.services, d.is_active,
                 NULL as distance_km
@@ -161,7 +161,7 @@ async def get_nearest_dsk(
     else:
         query = text(f"""
             SELECT
-                d.id, d.code, d.name, d.address, d.landmark,
+                d.id, d.code, d.driver_name, d.address, d.landmark,
                 d.latitude, d.longitude, d.city, d.pincode,
                 d.phone, d.operating_hours, d.services, d.is_active,
                 NULL as distance_km

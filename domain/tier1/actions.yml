@@ -25,6 +25,9 @@ actions:
   - action_check_leave_status
   - action_check_leave_balance
 
+  # Pricing & Policy Actions
+  - action_get_pricing_info
+
   # Sentiment & Handoff Actions
   - action_analyze_sentiment
   - action_check_escalation
@@ -41,12 +44,14 @@ entities:
   - location
   - station_name
   - time_period
+  - date
   - invoice_id
   - amount
   - plan_type
   - service_type
   - leave_date
   - leave_duration
+  - number
 
 forms:
   find_station_form:

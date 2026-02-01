@@ -106,16 +106,16 @@ responses:
       metadata:
         rephrase: true
 
-  utter_pricing_info:
-    - text: |
-        Hamare plans:
-
-        {pricing_list}
-
-        Monthly plan mein sabse achhi value hai!
-      metadata:
-        rephrase: true
-        language: hi-en
+#  utter_pricing_info:
+#    - text: |
+#        Hamare plans:
+#
+#        {pricing_list}
+#
+#        Monthly plan mein sabse achhi value hai!
+#      metadata:
+#        rephrase: true
+#        language: hi-en
 
   utter_ask_plan_selection:
     - text: "Kaunsa plan lena chahenge? (Daily/Weekly/Monthly/Yearly)"
@@ -277,17 +277,17 @@ responses:
       metadata:
         rephrase: true
 
-  utter_leave_status:
-    - text: |
-        {leave_status_message}
-
-        Pending Leaves: {pending_count}
-        Approved Leaves: {approved_count}
-
-        {leave_details}
-      metadata:
-        rephrase: true
-        language: hi-en
+#  utter_leave_status:
+#    - text: |
+#        {leave_status_message}
+#
+#        Pending Leaves: {pending_count}
+#        Approved Leaves: {approved_count}
+#
+#        {leave_details}
+#      metadata:
+#        rephrase: true
+#        language: hi-en
 
   utter_ask_apply_leave:
     - text: "Kya aap naya leave apply karna chahte hain?"
@@ -310,6 +310,56 @@ responses:
     - text: "Kuch aur?"
       metadata:
         rephrase: true
+
+  # ============================================
+  # PRICING & POLICY RESPONSES
+  # ============================================
+  utter_pricing_info:
+    - text: |
+        Battery Smart Pricing Structure:
+
+        📍 Swap Price: ₹170 (base) ya ₹70 (secondary) - zone aur city ke hisaab se
+
+        📅 Leave Policy: Mahine mein 4 din free leave. Agar 4 din se zyada absent ho aur battery swap nahi karo, toh ₹120 penalty lagti hai jo ₹60/swap se recover hoti hai.
+
+        🔧 Service Charge: Vehicle services ke liye ₹40/swap lagta hai (agar applicable ho).
+
+        Toh ek swap mein: Swap Price + Leave Penalty Recovery (agar ho) + Service Charge (agar ho)
+      metadata:
+        rephrase: true
+        language: hi-en
+
+  utter_leave_penalty_info:
+    - text: |
+        Leave Penalty Policy:
+
+        ✅ Aapko mahine mein 4 din free leave milte hain
+        ⚠️ Agar 4 din se zyada absent ho AUR battery swap nahi karo, toh ₹120 penalty lagti hai
+        💰 Yeh penalty ₹60/swap se recover hoti hai
+
+        Example: Agar aap 6 din absent rahe (2 din extra), toh ₹120 penalty lagegi jo 2 swaps mein recover ho jayegi (₹60 x 2 = ₹120)
+      metadata:
+        rephrase: true
+        language: hi-en
+
+  utter_service_charge_info:
+    - text: |
+        Service Charge:
+
+        🔧 Company dwara vehicle-related services ke liye ₹40/swap charge hota hai
+        💡 Yeh charge sirf tab lagta hai jab aapki vehicle pe koi service pending ho
+
+        Is charge se aapki vehicle ki maintenance aur repair ka kharcha cover hota hai.
+      metadata:
+        rephrase: true
+        language: hi-en
+
+  utter_leave_status:
+    - text: |
+        {leave_status_message}
+      metadata:
+        rephrase: true
+        language: hi-en
 
   utter_greet:
     - text: "Namaste! Battery Smart mein aapka swagat hai. Main aapki kaise madad kar sakti hoon?"

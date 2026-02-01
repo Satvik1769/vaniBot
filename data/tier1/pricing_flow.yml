@@ -1,0 +1,48 @@
+version: "3.1"
+
+flows:
+  pricing_info:
+    description: User wants to know about pricing structure, swap costs, or charges
+    name: Pricing Information Flow
+    nlu_trigger:
+      - intent: ask_pricing
+
+    steps:
+      - id: "start"
+        action: utter_pricing_info
+        next: "end_flow"
+
+      - id: "end_flow"
+        action: utter_anything_else
+
+  leave_penalty_info:
+    description: User asks about leave penalty policy
+    name: Leave Penalty Information Flow
+    nlu_trigger:
+      - intent: ask_leave_penalty
+
+    steps:
+      - id: "start"
+        action: action_check_leave_status
+        next: "show_info"
+
+      - id: "show_info"
+        action: utter_leave_penalty_info
+        next: "end_flow"
+
+      - id: "end_flow"
+        action: utter_anything_else
+
+  service_charge_info:
+    description: User asks about service charge
+    name: Service Charge Information Flow
+    nlu_trigger:
+      - intent: ask_service_charge
+
+    steps:
+      - id: "start"
+        action: utter_service_charge_info
+        next: "end_flow"
+
+      - id: "end_flow"
+        action: utter_anything_else

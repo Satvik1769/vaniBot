@@ -8,9 +8,25 @@ from datetime import date, datetime, timedelta
 from decimal import Decimal
 from uuid import UUID
 
-# Penalty configuration
-PENALTY_GRACE_DAYS = 4  # Days after end_date before penalty starts
-PENALTY_DAILY_RATE = Decimal("80.00")  # Rs 80 per day
+# ══════════════════════════════════════════════════════════════════════════════
+# PRICING CONFIGURATION
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Battery Return Penalty (subscription end)
+PENALTY_GRACE_DAYS = 4  # Days after subscription end_date before penalty starts
+PENALTY_DAILY_RATE = Decimal("80.00")  # Rs 80 per day for unreturned battery
+
+# Swap Pricing (varies by zone/city)
+BASE_SWAP_PRICE = Decimal("170.00")  # Primary swap price
+SECONDARY_SWAP_PRICE = Decimal("70.00")  # Secondary/discounted swap price
+
+# Leave Penalty (for absent days beyond limit)
+FREE_LEAVE_DAYS_PER_MONTH = 4  # Number of free leave days per month
+LEAVE_PENALTY_AMOUNT = Decimal("120.00")  # Penalty if absent beyond limit with battery
+LEAVE_PENALTY_RECOVERY_PER_SWAP = Decimal("60.00")  # Recovered at ₹60 per swap
+
+# Service Charge (vehicle services)
+SERVICE_CHARGE_PER_SWAP = Decimal("40.00")  # Collected at ₹40 per swap
 
 
 async def get_swap_history(
@@ -147,7 +163,13 @@ async def get_invoice_details(
     swap_id: str = None,
     invoice_date: date = None
 ) -> Optional[dict]:
-    """Get invoice details with explanation."""
+    """Get invoice details with explanation.
+
+    Pricing Structure:
+    - Swap Price: ₹170 (base) or ₹70 (secondary), varies by zone/city
+    - Leave Penalty: ₹120 if absent >4 days/month with battery, recovered at ₹60/swap
+    - Service Charge: ₹40/swap for vehicle services
+    """
     conditions = ["d.phone_number = :phone_number"]
     params = {"phone_number": phone_number}
 
@@ -169,7 +191,8 @@ async def get_invoice_details(
             i.id, i.invoice_number, i.driver_id, i.swap_id, i.subscription_id,
             i.invoice_type, i.amount, i.tax_amount, i.total_amount,
             i.description, i.description_hi, i.payment_status, i.generated_at,
-            d.name as driver_name,
+            i.amount, i.leave_penalty_recovery, i.tax_amount,
+            d.driver_name as driver_name,
             sw.swap_time, sw.is_subscription_swap, sw.charge_amount,
             sw.old_battery_id, sw.new_battery_id,
             st.name as station_name, st.code as station_code,
@@ -192,42 +215,128 @@ async def get_invoice_details(
 
     data = dict(row._mapping)
 
-    # Generate explanation based on invoice type
-    if data["invoice_type"] == "extra_swap":
-        explanation = (
-            f"This charge of Rs.{data['amount']} was for an extra swap beyond your daily plan limit. "
-            f"Your plan includes {data['swaps_included']} swaps per day. "
-            f"This was an additional swap at {data['station_name']}."
-        )
-        explanation_hi = (
-            f"Yeh Rs.{data['amount']} ka charge aapke daily plan ki limit ke baad ke swap ke liye laga. "
-            f"Aapke plan mein {data['swaps_included']} swaps per day included hain. "
-            f"Yeh {data['station_name']} pe additional swap tha."
-        )
-        breakdown = [
-            {"item": "Extra Swap Charge", "item_hi": "Extra Swap Charge", "amount": data["amount"]},
-            {"item": "GST (18%)", "item_hi": "GST (18%)", "amount": data["tax_amount"]},
-            {"item": "Total", "item_hi": "Kul", "amount": data["total_amount"]}
-        ]
+    # Extract pricing components (with defaults if columns don't exist)
+    swap_price = data.get("swap_price") or data.get("amount") or Decimal("0")
+    leave_penalty_recovery = data.get("leave_penalty_recovery") or Decimal("0")
+    service_charge = data.get("service_charge") or Decimal("0")
+
+    # Build detailed breakdown
+    breakdown = []
+    explanation_parts = []
+    explanation_parts_hi = []
+
+    # Swap price component
+    if data["invoice_type"] == "swap" or data["invoice_type"] == "extra_swap":
+        if swap_price > 0:
+            if swap_price == BASE_SWAP_PRICE:
+                breakdown.append({
+                    "item": "Swap Price (Base Rate)",
+                    "item_hi": "Swap Price (Base Rate)",
+                    "amount": float(swap_price)
+                })
+            elif swap_price == SECONDARY_SWAP_PRICE:
+                breakdown.append({
+                    "item": "Swap Price (Secondary Rate)",
+                    "item_hi": "Swap Price (Secondary Rate)",
+                    "amount": float(swap_price)
+                })
+            else:
+                breakdown.append({
+                    "item": "Swap Price",
+                    "item_hi": "Swap Price",
+                    "amount": float(swap_price)
+                })
+            explanation_parts.append(f"Swap price: ₹{swap_price}")
+            explanation_parts_hi.append(f"Swap price: ₹{swap_price}")
+
+        # Leave penalty recovery component
+        if leave_penalty_recovery > 0:
+            breakdown.append({
+                "item": f"Leave Penalty Recovery (₹{LEAVE_PENALTY_RECOVERY_PER_SWAP}/swap)",
+                "item_hi": f"Leave Penalty Recovery (₹{LEAVE_PENALTY_RECOVERY_PER_SWAP}/swap)",
+                "amount": float(leave_penalty_recovery)
+            })
+            explanation_parts.append(
+                f"Leave penalty recovery: ₹{leave_penalty_recovery} "
+                f"(You were absent beyond {FREE_LEAVE_DAYS_PER_MONTH} days in the month. "
+                f"₹{LEAVE_PENALTY_AMOUNT} penalty is recovered at ₹{LEAVE_PENALTY_RECOVERY_PER_SWAP}/swap)"
+            )
+            explanation_parts_hi.append(
+                f"Leave penalty recovery: ₹{leave_penalty_recovery} "
+                f"(Aap mahine mein {FREE_LEAVE_DAYS_PER_MONTH} din se zyada absent the. "
+                f"₹{LEAVE_PENALTY_AMOUNT} penalty ₹{LEAVE_PENALTY_RECOVERY_PER_SWAP}/swap se recover hoti hai)"
+            )
+
+        # Service charge component
+        if service_charge > 0:
+            breakdown.append({
+                "item": f"Service Charge (Vehicle Services)",
+                "item_hi": f"Service Charge (Vehicle Services)",
+                "amount": float(service_charge)
+            })
+            explanation_parts.append(
+                f"Service charge: ₹{service_charge} "
+                f"(For vehicle-related services provided by the company)"
+            )
+            explanation_parts_hi.append(
+                f"Service charge: ₹{service_charge} "
+                f"(Company dwara vehicle services ke liye)"
+            )
+
+        # Tax if applicable
+        if data.get("tax_amount") and data["tax_amount"] > 0:
+            breakdown.append({
+                "item": "GST (18%)",
+                "item_hi": "GST (18%)",
+                "amount": float(data["tax_amount"])
+            })
+
+        # Total
+        breakdown.append({
+            "item": "Total",
+            "item_hi": "Kul",
+            "amount": float(data["total_amount"])
+        })
+
+        explanation = " | ".join(explanation_parts) if explanation_parts else f"Swap charge at {data.get('station_name', 'station')}"
+        explanation_hi = " | ".join(explanation_parts_hi) if explanation_parts_hi else f"{data.get('station_name', 'station')} pe swap charge"
+
     elif data["invoice_type"] == "subscription":
         explanation = (
-            f"This is your subscription payment for {data['plan_name']} plan."
+            f"This is your subscription payment for {data.get('plan_name', 'your')} plan."
         )
         explanation_hi = (
-            f"Yeh aapka {data['plan_name']} plan ka subscription payment hai."
+            f"Yeh aapka {data.get('plan_name', '')} plan ka subscription payment hai."
         )
         breakdown = [
-            {"item": f"{data['plan_name']} Plan", "item_hi": f"{data['plan_name']} Plan", "amount": data["amount"]},
-            {"item": "GST (18%)", "item_hi": "GST (18%)", "amount": data["tax_amount"]},
-            {"item": "Total", "item_hi": "Kul", "amount": data["total_amount"]}
+            {"item": f"{data.get('plan_name', '')} Plan", "item_hi": f"{data.get('plan_name', '')} Plan", "amount": float(data["amount"])},
+            {"item": "GST (18%)", "item_hi": "GST (18%)", "amount": float(data.get("tax_amount", 0))},
+            {"item": "Total", "item_hi": "Kul", "amount": float(data["total_amount"])}
         ]
+
+    elif data["invoice_type"] == "leave_penalty":
+        explanation = (
+            f"Leave penalty of ₹{data['amount']}. "
+            f"You were absent for more than {FREE_LEAVE_DAYS_PER_MONTH} days this month while retaining the battery. "
+            f"Penalty is ₹{LEAVE_PENALTY_AMOUNT} and is recovered at ₹{LEAVE_PENALTY_RECOVERY_PER_SWAP} per swap."
+        )
+        explanation_hi = (
+            f"₹{data['amount']} ki leave penalty. "
+            f"Aap is mahine {FREE_LEAVE_DAYS_PER_MONTH} din se zyada absent rahe aur battery rakh li. "
+            f"Penalty ₹{LEAVE_PENALTY_AMOUNT} hai jo ₹{LEAVE_PENALTY_RECOVERY_PER_SWAP}/swap se recover hoti hai."
+        )
+        breakdown = [
+            {"item": "Leave Penalty", "item_hi": "Leave Penalty", "amount": float(data["amount"])},
+            {"item": "Total", "item_hi": "Kul", "amount": float(data["total_amount"])}
+        ]
+
     else:
         explanation = f"Invoice for {data['invoice_type']}"
         explanation_hi = f"{data['invoice_type']} ke liye invoice"
         breakdown = [
-            {"item": "Amount", "item_hi": "Rashi", "amount": data["amount"]},
-            {"item": "Tax", "item_hi": "Tax", "amount": data["tax_amount"]},
-            {"item": "Total", "item_hi": "Kul", "amount": data["total_amount"]}
+            {"item": "Amount", "item_hi": "Rashi", "amount": float(data["amount"])},
+            {"item": "Tax", "item_hi": "Tax", "amount": float(data.get("tax_amount", 0))},
+            {"item": "Total", "item_hi": "Kul", "amount": float(data["total_amount"])}
         ]
 
     return {
@@ -239,23 +348,34 @@ async def get_invoice_details(
             "subscription_id": data["subscription_id"],
             "invoice_type": data["invoice_type"],
             "amount": data["amount"],
-            "tax_amount": data["tax_amount"],
+            "tax_amount": data.get("tax_amount"),
             "total_amount": data["total_amount"],
-            "description": data["description"],
-            "description_hi": data["description_hi"],
+            "swap_price": float(swap_price) if swap_price else None,
+            "leave_penalty_recovery": float(leave_penalty_recovery) if leave_penalty_recovery else None,
+            "service_charge": float(service_charge) if service_charge else None,
+            "description": data.get("description"),
+            "description_hi": data.get("description_hi"),
             "payment_status": data["payment_status"],
             "generated_at": data["generated_at"]
         },
         "explanation": explanation,
         "explanation_hi": explanation_hi,
         "breakdown": breakdown,
+        "pricing_info": {
+            "base_swap_price": float(BASE_SWAP_PRICE),
+            "secondary_swap_price": float(SECONDARY_SWAP_PRICE),
+            "leave_penalty_amount": float(LEAVE_PENALTY_AMOUNT),
+            "leave_penalty_recovery_per_swap": float(LEAVE_PENALTY_RECOVERY_PER_SWAP),
+            "service_charge_per_swap": float(SERVICE_CHARGE_PER_SWAP),
+            "free_leave_days_per_month": FREE_LEAVE_DAYS_PER_MONTH
+        },
         "related_swap": {
             "swap_time": data["swap_time"],
-            "station_name": data["station_name"],
-            "station_code": data["station_code"],
-            "old_battery_id": data["old_battery_id"],
-            "new_battery_id": data["new_battery_id"]
-        } if data["swap_id"] else None
+            "station_name": data.get("station_name"),
+            "station_code": data.get("station_code"),
+            "old_battery_id": data.get("old_battery_id"),
+            "new_battery_id": data.get("new_battery_id")
+        } if data.get("swap_id") else None
     }
 
 
@@ -272,7 +392,7 @@ async def get_penalty_details(
             ds.battery_id,
             ds.battery_returned,
             ds.battery_returned_date,
-            d.name as driver_name,
+            d.driver_name as driver_name,
             d.phone_number,
             sp.name as plan_name,
             CASE
@@ -401,4 +521,148 @@ async def get_invoice_with_penalty(
         "explanation": explanation,
         "explanation_hi": explanation_hi,
         "has_penalty": penalty_result.get("has_penalty", False) if penalty_result else False
+    }
+
+
+async def get_leave_status(
+    db: AsyncSession,
+    phone_number: str
+) -> dict:
+    """Get driver's leave status and pending leave penalties.
+
+    Leave Policy:
+    - 4 free leave days per month
+    - ₹120 penalty if absent beyond limit AND retains battery without swap
+    - Penalty recovered at ₹60 per swap
+    """
+    query = text("""
+        SELECT
+            d.id as driver_id,
+            d.driver_name,
+            d.phone_number,
+            COALESCE(dl.leave_days_used, 0) as leave_days_used,
+            COALESCE(dl.pending_leave_penalty, 0) as pending_leave_penalty,
+            COALESCE(dl.leave_penalty_recovered, 0) as leave_penalty_recovered
+        FROM drivers d
+        LEFT JOIN driver_leave_status dl ON d.id = dl.driver_id
+            AND dl.month = DATE_TRUNC('month', CURRENT_DATE)
+        WHERE d.phone_number = :phone_number
+    """)
+
+    result = await db.execute(query, {"phone_number": phone_number})
+    row = result.fetchone()
+
+    if not row:
+        return {
+            "found": False,
+            "message": "Driver not found",
+            "message_hi": "Driver nahi mila"
+        }
+
+    data = dict(row._mapping)
+    leave_days_used = int(data.get("leave_days_used", 0))
+    pending_penalty = Decimal(str(data.get("pending_leave_penalty", 0)))
+    penalty_recovered = Decimal(str(data.get("leave_penalty_recovered", 0)))
+    remaining_penalty = pending_penalty - penalty_recovered
+
+    leave_days_remaining = max(0, FREE_LEAVE_DAYS_PER_MONTH - leave_days_used)
+
+    if remaining_penalty > 0:
+        swaps_needed = int((remaining_penalty / LEAVE_PENALTY_RECOVERY_PER_SWAP) + Decimal("0.99"))
+        message = (
+            f"You have used {leave_days_used} leave days this month. "
+            f"Pending leave penalty: ₹{remaining_penalty}. "
+            f"This will be recovered at ₹{LEAVE_PENALTY_RECOVERY_PER_SWAP}/swap "
+            f"(approximately {swaps_needed} swaps remaining)."
+        )
+        message_hi = (
+            f"Aapne is mahine {leave_days_used} leave days use kiye hain. "
+            f"Pending leave penalty: ₹{remaining_penalty}. "
+            f"Yeh ₹{LEAVE_PENALTY_RECOVERY_PER_SWAP}/swap se recover hogi "
+            f"(lagbhag {swaps_needed} swaps baaki)."
+        )
+    else:
+        message = (
+            f"You have used {leave_days_used} leave days this month. "
+            f"{leave_days_remaining} free leave days remaining. "
+            f"No pending leave penalty."
+        )
+        message_hi = (
+            f"Aapne is mahine {leave_days_used} leave days use kiye hain. "
+            f"{leave_days_remaining} free leave days baaki hain. "
+            f"Koi pending leave penalty nahi hai."
+        )
+
+    return {
+        "found": True,
+        "driver_id": str(data["driver_id"]),
+        "driver_name": data["driver_name"],
+        "leave_days_used": leave_days_used,
+        "leave_days_remaining": leave_days_remaining,
+        "free_leave_days_per_month": FREE_LEAVE_DAYS_PER_MONTH,
+        "pending_leave_penalty": float(remaining_penalty),
+        "leave_penalty_recovered": float(penalty_recovered),
+        "leave_penalty_per_day": float(LEAVE_PENALTY_AMOUNT),
+        "recovery_per_swap": float(LEAVE_PENALTY_RECOVERY_PER_SWAP),
+        "message": message,
+        "message_hi": message_hi
+    }
+
+
+def get_pricing_info() -> dict:
+    """Get the current pricing structure information.
+
+    Returns static pricing info for explaining charges to drivers.
+    """
+    return {
+        "swap_pricing": {
+            "base_price": float(BASE_SWAP_PRICE),
+            "secondary_price": float(SECONDARY_SWAP_PRICE),
+            "description": "Swap price varies by zone and city",
+            "description_hi": "Swap price zone aur city ke hisaab se alag hota hai"
+        },
+        "leave_policy": {
+            "free_days_per_month": FREE_LEAVE_DAYS_PER_MONTH,
+            "penalty_amount": float(LEAVE_PENALTY_AMOUNT),
+            "recovery_per_swap": float(LEAVE_PENALTY_RECOVERY_PER_SWAP),
+            "description": (
+                f"You get {FREE_LEAVE_DAYS_PER_MONTH} free leave days per month. "
+                f"If you are absent beyond this limit and retain the battery without swapping, "
+                f"a penalty of ₹{LEAVE_PENALTY_AMOUNT} is applied. "
+                f"This is recovered at ₹{LEAVE_PENALTY_RECOVERY_PER_SWAP} per swap."
+            ),
+            "description_hi": (
+                f"Aapko mahine mein {FREE_LEAVE_DAYS_PER_MONTH} free leave days milte hain. "
+                f"Agar aap is limit se zyada absent hain aur battery swap nahi karte, "
+                f"toh ₹{LEAVE_PENALTY_AMOUNT} ki penalty lagti hai. "
+                f"Yeh ₹{LEAVE_PENALTY_RECOVERY_PER_SWAP}/swap se recover hoti hai."
+            )
+        },
+        "service_charge": {
+            "per_swap": float(SERVICE_CHARGE_PER_SWAP),
+            "description": "Service charge for vehicle-related services provided by the company",
+            "description_hi": "Company dwara vehicle services ke liye service charge"
+        },
+        "battery_return_penalty": {
+            "grace_days": PENALTY_GRACE_DAYS,
+            "daily_rate": float(PENALTY_DAILY_RATE),
+            "description": (
+                f"After subscription ends, you have {PENALTY_GRACE_DAYS} days grace period to return the battery. "
+                f"After that, a penalty of ₹{PENALTY_DAILY_RATE}/day is charged for unreturned battery."
+            ),
+            "description_hi": (
+                f"Subscription khatam hone ke baad aapko battery return karne ke liye {PENALTY_GRACE_DAYS} din milte hain. "
+                f"Uske baad unreturned battery ke liye ₹{PENALTY_DAILY_RATE}/din penalty lagti hai."
+            )
+        },
+        "summary": (
+            f"Swap payment = Swap Price (₹{BASE_SWAP_PRICE} or ₹{SECONDARY_SWAP_PRICE}) "
+            f"+ Leave Penalty Recovery (₹{LEAVE_PENALTY_RECOVERY_PER_SWAP}/swap if applicable) "
+            f"+ Service Charge (₹{SERVICE_CHARGE_PER_SWAP}/swap if applicable)"
+        ),
+        "summary_hi": (
+            f"Swap payment = Swap Price (₹{BASE_SWAP_PRICE} ya ₹{SECONDARY_SWAP_PRICE}) "
+            f"+ Leave Penalty Recovery (₹{LEAVE_PENALTY_RECOVERY_PER_SWAP}/swap agar lagu ho) "
+            f"+ Service Charge (₹{SERVICE_CHARGE_PER_SWAP}/swap agar lagu ho)"
+        )
     }

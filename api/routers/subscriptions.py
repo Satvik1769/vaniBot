@@ -21,16 +21,12 @@ async def check_subscription_status(
     db: AsyncSession = Depends(get_db)
 ):
     """Check subscription status for a driver."""
-    # Get driver
-    driver = await driver_service.get_driver_by_phone(db, request.phone_number)
-    if not driver:
-        raise HTTPException(status_code=404, detail="Driver not found")
-
     result = await subscription_service.get_subscription_status(db, request.phone_number)
 
+    if not result.get("driver_id"):
+        raise HTTPException(status_code=404, detail="Driver not found")
+
     return {
-        "driver_id": driver["id"],
-        "driver_name": driver.get("name"),
         "phone_number": request.phone_number,
         **result
     }
@@ -42,15 +38,12 @@ async def get_subscription_status(
     db: AsyncSession = Depends(get_db)
 ):
     """Get subscription status using phone number."""
-    driver = await driver_service.get_driver_by_phone(db, phone_number)
-    if not driver:
-        raise HTTPException(status_code=404, detail="Driver not found")
-
     result = await subscription_service.get_subscription_status(db, phone_number)
 
+    if not result.get("driver_id"):
+        raise HTTPException(status_code=404, detail="Driver not found")
+
     return {
-        "driver_id": driver["id"],
-        "driver_name": driver.get("name"),
         "phone_number": phone_number,
         **result
     }
@@ -145,15 +138,12 @@ async def get_subscription_with_penalty(
     Includes penalty information if battery not returned
     after 4 days of subscription end (Rs.80/day).
     """
-    driver = await driver_service.get_driver_by_phone(db, phone_number)
-    if not driver:
-        raise HTTPException(status_code=404, detail="Driver not found")
-
     result = await subscription_service.get_subscription_with_penalty(db, phone_number)
 
+    if not result.get("driver_id"):
+        raise HTTPException(status_code=404, detail="Driver not found")
+
     return {
-        "driver_id": driver["id"],
-        "driver_name": driver.get("name"),
         "phone_number": phone_number,
         **result
     }
