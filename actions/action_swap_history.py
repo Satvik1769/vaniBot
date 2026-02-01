@@ -13,7 +13,7 @@ from rasa_sdk.types import DomainDict
 logger = logging.getLogger(__name__)
 
 # API Base URL - configure via environment variable in production
-API_BASE_URL = "http://34.218.254.232:8000/api/v1"
+API_BASE_URL = "http://16.148.111.44:8000/api/v1"
 
 # Time period mapping for normalization
 TIME_PERIOD_MAP = {
