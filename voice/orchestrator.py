@@ -43,7 +43,7 @@ def get_conversation_log_service():
 
 logger = logging.getLogger(__name__)
 
-RASA_URL = os.getenv("RASA_URL", "http://16.148.111.44:5005")
+RASA_URL = os.getenv("RASA_URL", "http://54.245.152.155:5005")
 
 # Deepgram operates at 16kHz, Twilio at 8kHz
 DEEPGRAM_SAMPLE_RATE = 16000
